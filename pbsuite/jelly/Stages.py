@@ -56,7 +56,7 @@ def mapping(jobDirs, outDir, reference, referenceSa, parameters, extras):
     logging.basicConfig( stream=sys.stderr, level=level, format=logFormat )
     logging.info("Running blasr")
     
-    mappingTemplate = Template("blasr ${fasta} ${ref} ${sa} -m 4 -out ${outFile} ${parameters} ")
+    mappingTemplate = Template("blasr ${fasta} ${ref} ${sa} -m 4 --out ${outFile} ${parameters} ")
     tailTemplate = Template("m4pie.py ${outFile} ${fasta} ${ref} --nproc ${nproc} -i ${extras}")
     
     ret = []
