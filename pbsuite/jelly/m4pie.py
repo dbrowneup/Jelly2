@@ -72,7 +72,7 @@ def mapTails(fq, ref, nproc=1, out="tailmap.sam", useSa=True):
     automatically search for .sa
     """
     if os.path.exists(ref+".sa") and useSa:
-        sa = "-sa " + ref + ".sa"
+        sa = "--sa " + ref + ".sa"
     else:
         sa = ""
     cmd = ("blasr %s %s %s --nproc %d -m 4 --bestn 1 --nCandidates 20 --out %s"

@@ -62,7 +62,7 @@ def mapping(jobDirs, outDir, reference, referenceSa, parameters, extras):
     ret = []
     #sa safety
     if os.path.exists(referenceSa):
-        referenceSa = "-sa " + referenceSa
+        referenceSa = "--sa " + referenceSa
     else:
         logging.critical("Specified reference.sa %s does not exists. Mapping will be slower" % (referenceSa))
         referenceSa = ""
