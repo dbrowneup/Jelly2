@@ -10,7 +10,7 @@ from pbsuite.utils.setupLogging import setupLogging
 USAGE="""\
 Extracts softclip bases from aligned reads and remaps them to the provided reference. Produces a unified bam with reads containing updated information about tail-mapping.
 
-WARNING! -- Input.bam should be produced without -noSplitSubreads in blasr (before blasr was fixed in smrtanalysis 2.1)
+WARNING! -- Input.bam should be produced without --noSplitSubreads in blasr (before blasr was fixed in smrtanalysis 2.1)
 """
     
 def extractTails(aligns, reads, outFq, minLength=100):
@@ -76,7 +76,7 @@ def mapTails(fq, ref, nproc=1, out="tailmap.sam", useSa=True):
     else:
         sa = ""
     cmd = ("blasr %s %s %s --nproc %d -m 4 --bestn 1 --nCandidates 20 --out %s"
-           " -minPctIdentity 75 -sdpTupleSize 6 -noSplitSubreads") \
+           " --minPctIdentity 75 --sdpTupleSize 6 --noSplitSubreads") \
            % (fq, ref, sa, nproc, out)
     
     logging.debug(cmd)
