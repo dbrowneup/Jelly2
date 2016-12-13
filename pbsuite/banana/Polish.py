@@ -17,7 +17,7 @@ def blasr(query, target, nproc=1, bestn=1, outName="map.m5"):
     """
     runs blasr
     """
-    r,o,e = exe("blasr %s %s -bestn %d -affineAlign -m 5 -nproc %d -out %s" \
+    r,o,e = exe("blasr %s %s --bestn %d --affineAlign -m 5 --nproc %d --out %s" \
                 % (query, target, bestn, nproc, outName))
     
 
