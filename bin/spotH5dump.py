@@ -1,1 +1,0 @@
-../pbsuite/honey/spotH5dump.py
