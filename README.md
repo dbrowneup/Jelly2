@@ -10,13 +10,13 @@ Thus the focus of this work is to improve the gap filling and scaffolding capabi
 
 # Dependencies
 
-Python (v2.7)
-BLASR (https://github.com/PacificBiosciences/blasr)
-NetworkX (https://github.com/networkx/networkx)
-Pysam (https://github.com/pysam-developers/pysam)
-Minimap (https://github.com/lh3/minimap)
-Miniasm (https://github.com/lh3/miniasm)
-Racon (https://github.com/isovic/racon)
+* Python (v2.7)
+* BLASR (https://github.com/PacificBiosciences/blasr)
+* NetworkX (https://github.com/networkx/networkx)
+* Pysam (https://github.com/pysam-developers/pysam)
+* Minimap (https://github.com/lh3/minimap)
+* Miniasm (https://github.com/lh3/miniasm)
+* Racon (https://github.com/isovic/racon)
 
 # Design Philosophy
 
