@@ -1,16 +1,19 @@
-
-import glob, os, sys, logging, re
+import re
+import os
+import sys
+import glob
+import logging
 from string import Template
-
 
 from pbsuite.utils.CommandRunner import Command
 from pbsuite.utils.FileHandlers import GapInfoFile
 
-DEBUG = ""#change to --debug for use
+# Change to --debug for use
+DEBUG = ""
+
 """
 This code is more about setting up commands to run other things, not actual computations.
 """
-
 
 PRINT_HELPS = {"setup": os.path.join("Setup.py --help"), \
                "mapping": "blasr -h", \
@@ -19,7 +22,7 @@ PRINT_HELPS = {"setup": os.path.join("Setup.py --help"), \
                "assembly": os.path.join("Assembly.py --help"), \
                "output": os.path.join("Collection.py --help")}
 
-def setup( scaffoldName, scaffoldQualName, gapInfoName , extras):
+def setup(scaffoldName, scaffoldQualName, gapInfoName, extras):
     """
     Generate all the information we need from the input scaffolding
     """
@@ -27,16 +30,14 @@ def setup( scaffoldName, scaffoldQualName, gapInfoName , extras):
     if scaffoldQualName is None:
         scaffoldQualName = ""
     
-    command = Template("Setup.py ${scaf} -g ${gap} -i ${debug} ${extras}")\
-                    .substitute( \
-                    {"scaf":scaffoldName, \
-                    "scafQual":scaffoldQualName, \
-                    "gap":gapInfoName, \
-                    "debug":DEBUG, \
-                    "extras":extras})
+    command = Template("Setup.py ${scaf} -g ${gap} -i ${debug} ${extras}").substitute( \
+        {"scaf":scaffoldName, \
+        "scafQual":scaffoldQualName, \
+        "gap":gapInfoName, \
+        "debug":DEBUG, \
+        "extras":extras})
     baseName = os.path.dirname(scaffoldName)
-    ret = Command(command, "setup", os.path.join(baseName,"setup.out"), \
-                        os.path.join(baseName,"setup.err"))
+    ret = Command(command, "setup", os.path.join(baseName,"setup.out"), os.path.join(baseName,"setup.err"))
     return ret
 
 def mapping(jobDirs, outDir, reference, referenceSa, parameters, extras):
@@ -177,8 +178,7 @@ def assembly(inputDir, gapInfoFn, extras):
             elif len(g) == 2:
                 ref,ca = g[0].split('.')
                 ref,cb = g[1].split('.')
-                #Hackey Shack. - effect of sorting node names
-                # to prevent redundancies during graph building
+                #Hackey Shack. - effect of sorting node names to prevent redundancies during graph building
                 ca = int(ca[:-2])
                 cb = int(cb[:-2])
                 j = [ca,cb]
