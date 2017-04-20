@@ -172,6 +172,7 @@ class JellyRunner():
             wDir = os.path.dirname(self.protocol.scaffoldName)
             myCommands = [Stages.setup(self.protocol.scaffoldName, self.protocol.scaffoldQualName, \
                 self.protocol.gapTable, self.options.extras)]
+
         elif self.executeStage == "mapping":
             wDir = os.path.join(self.protocol.outDir, "mapping")
             try:
@@ -183,6 +184,7 @@ class JellyRunner():
                 sys.exit(1)
             myCommands = Stages.mapping(self.protocol.inputs, wDir, self.protocol.reference, \
                 self.protocol.referenceIndex, self.protocol.blasrParams, self.options.extras)
+
         elif self.executeStage == "support":
             wDir = os.path.join(self.protocol.outDir, "support")
             try:
@@ -192,7 +194,8 @@ class JellyRunner():
             if not os.path.exists(wDir):
                 logging.warning("%s was not created. Check write permissions!" % wDir)
                 sys.exit(1)
-            myCommands = Stages.support(self.protocol.outDir, self.protocol.gapTable, wDir, self.options.extras) 
+            myCommands = Stages.support(self.protocol.outDir, self.protocol.gapTable, wDir, self.options.extras)
+
         elif self.executeStage == "extraction":
             wDir = os.path.join(self.protocol.outDir, "assembly")
             try:
@@ -203,12 +206,15 @@ class JellyRunner():
                 logging.warning("%s was not created. Check write permissions!" % wDir)
                 sys.exit(1)
             myCommands = [Stages.extraction(wDir, self.protocolName, self.options.extras)]
+
         elif self.executeStage == "assembly":
             wDir = os.path.join(self.protocol.outDir, "assembly")
             myCommands = Stages.assembly(wDir, self.protocol.gapTable, self.options.extras)
+
         elif self.executeStage == "output":
             wDir = os.path.join(self.protocol.outDir, "assembly")
             myCommands = [Stages.collection(self.protocol.outDir, self.protocol, self.options.extras)]
+            
         logging.debug("CommandRunner Returned: " + str(self.runCmd(myCommands, wDir, self.executeStage)))
         logging.info("Finished %s Stage: %s" % (self.runCmd.runType, self.executeStage))
         
