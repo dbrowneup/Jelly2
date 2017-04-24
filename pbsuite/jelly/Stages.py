@@ -22,17 +22,12 @@ PRINT_HELPS = {"setup": os.path.join("Setup.py --help"), \
                "assembly": os.path.join("Assembly.py --help"), \
                "output": os.path.join("Collection.py --help")}
 
-def setup(scaffoldName, scaffoldQualName, gapInfoName, extras):
+def setup(scaffoldName, gapInfoName, extras):
     """
     Generate all the information we need from the input scaffolding
     """
-    #Error
-    if scaffoldQualName is None:
-        scaffoldQualName = ""
-    
-    command = Template("Setup.py ${scaf} -g ${gap} -i ${debug} ${extras}").substitute( \
+    command = Template("Setup.py ${scaf} -g ${gap} ${debug} ${extras}").substitute( \
         {"scaf":scaffoldName, \
-        "scafQual":scaffoldQualName, \
         "gap":gapInfoName, \
         "debug":DEBUG, \
         "extras":extras})

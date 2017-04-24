@@ -65,18 +65,9 @@ class JellyProtocol():
             logging.error("Reference %s Does Not Exist!" % (self.scaffoldName))
             sys.exit(1)
         self.referenceNameBase = self.scaffoldName[:self.scaffoldName.rindex(".fasta")]
-        # Deactivating .qual detection, delete in future
-#        self.scaffoldQualName = self.referenceNameBase+".qual"
-#        if not os.path.exists(self.scaffoldQualName):
-#            sys.stderr.write(("[WARNING] Couldn't find %s... assuming there " \
-#                            "isn't a quality file for the reference\n") % \
-#                            (self.scaffoldQualName))
-        self.scaffoldQualName = None  
         self.gapTable = self.referenceNameBase+".gapInfo.bed"
-        self.reference = self.scaffoldName
-#        self.referenceIndex = self.reference+".sa"       
-        inputNode = root.find("input")
         # Load base directory into memory
+        inputNode = root.find("input")
         if inputNode.attrib.has_key("baseDir"):
             self.baseDir = inputNode.attrib["baseDir"]
         else:
@@ -170,8 +161,7 @@ class JellyRunner():
         # Setup before a stage and run
         if self.executeStage == "setup":
             wDir = os.path.dirname(self.protocol.scaffoldName)
-            myCommands = [Stages.setup(self.protocol.scaffoldName, self.protocol.scaffoldQualName, \
-                self.protocol.gapTable, self.options.extras)]
+            myCommands = [Stages.setup(self.protocol.scaffoldName, self.protocol.gapTable, self.options.extras)]
 
         elif self.executeStage == "mapping":
             wDir = os.path.join(self.protocol.outDir, "mapping")
@@ -182,7 +172,7 @@ class JellyRunner():
             if not os.path.exists(wDir):
                 logging.warning("%s was not created. Check write permissions!" % wDir)
                 sys.exit(1)
-            myCommands = Stages.mapping(self.protocol.inputs, wDir, self.protocol.reference, \
+            myCommands = Stages.mapping(self.protocol.inputs, wDir, self.protocol.scaffoldName, \
                 self.protocol.referenceIndex, self.protocol.blasrParams, self.options.extras)
 
         elif self.executeStage == "support":
