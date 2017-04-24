@@ -25,14 +25,14 @@ class Setup():
         parser.add_argument('scaffolds', action='store', help='The input scaffolds in Fasta format')
         parser.add_argument('-g', '--gapOutput', dest='gapOutput', \
             help="Create the table for gapInformation", default=None)
-        parser.add_argument("--debug",action="store_true", help="Increases verbosity of logging" )
-        parser.add_argument("--minGap", dest="minGap", type="int", default=25, \
-            help="Minimum number of consecutive Ns to be considered a gap. default=25")
-        parser.add_argument("--maxGap", dest="maxGap", type="int", default=1000000, \
-            help="Maximum number of consecutive Ns to be considered a gap default=Inf")
-        parser.add_argument('--flankSize', dest='flankSize', type='int', default=1000, \
+        parser.add_argument("--debug",action="store_true", help="Increases verbosity of logging")
+        parser.add_argument("--minGap", dest="minGap", type=int, default=25, \
+            help="Minimum number of consecutive Ns to be considered a gap, default=25")
+        parser.add_argument("--maxGap", dest="maxGap", type=int, default=1000000, \
+            help="Maximum number of consecutive Ns to be considered a gap, default=Inf")
+        parser.add_argument('--flankSize', dest='flankSize', type=int, default=1000, \
             help='Number of extracted bases flanking gaps and scaffold ends, default=1000')
-        self.options = parser.parse_arguments()
+        self.options = parser.parse_args()
         if not os.path.isfile(self.options.scaffolds):
             parser.error("Error! Scaffold File is not a file / does not exist")
         if not self.options.scaffolds.endswith(".fasta") or not self.options.scaffolds.endswith(".fa"):
