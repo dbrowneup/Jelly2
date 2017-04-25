@@ -2,12 +2,9 @@
 
 import os
 import re
-import logging
 import argparse
 
 from pyfaidx import Fasta
-
-from pbsuite.utils.setupLogging import *
 
 def USAGE():
     return """
@@ -25,7 +22,6 @@ class Setup():
         parser.add_argument('scaffolds', action='store', help='The input scaffolds in Fasta format')
         parser.add_argument('-g', '--gapOutput', dest='gapOutput', \
             help="Create the table for gapInformation", default=None)
-        parser.add_argument("--debug",action="store_true", help="Increases verbosity of logging")
         parser.add_argument("--minGap", dest="minGap", type=int, default=25, \
             help="Minimum number of consecutive Ns to be considered a gap, default=25")
         parser.add_argument("--maxGap", dest="maxGap", type=int, default=1000000, \
@@ -37,35 +33,59 @@ class Setup():
             parser.error("Error! Scaffold File is not a file / does not exist")
         if not self.options.scaffolds.endswith(".fasta") or not self.options.scaffolds.endswith(".fa"):
             parser.error("Reference must end in extension .fasta or .fa! Please rename it.")
-        setupLogging(self.options.debug)
 
     def run(self):
         """
+        Output stream is 4 separate Fasta files containing left and right flanking
+        sequences for scaffolds and gaps within them. PacBio reads can then be aligned
+        to each Fasta file separately, selecting the best hit for each read. The alignments
+        can then be loaded into memory and reads that bridge gaps can be identified.
+
         Fasta header output format:
+            Scaffold_ends.L.fa
             >Scaffold_1.end.L
+            ATGC
+
+            Scaffold_ends.R.fa
             >Scaffold_1.end.R
+            ATGC
+
+            Scaffold_gaps.L.fa
             >Scaffold_1.gap.1.L
+            ATGC
+
+            Scaffold_gaps.R.fa
             >Scaffold_1.gap.1.R
+            ATGC
         
-        Flanking sequences of n bp are stored for each scaffold and for each gap.
+        Flanking sequences of X bp are stored for each scaffold and for each gap.
         The gap table is written in standard BED format:
             Scaffold_1 gapStart gapEnd
         """
-        # Fasta reference output
-        flankName = '.'.join(self.options.scaffolds.split('.')[:-1])+'.flanks.fasta'
-        flankOutput = open(flankName, 'w')      
-        # Gaps output
-        if self.options.gapOutput is not None:
+        # Open Fasta output files
+        basename = '.'.join(self.options.scaffolds.split('.')[:-1])
+        endsL = open(basename+'.ends.L.fa', 'w')
+        endsR = open(basename+'.ends.R.fa', 'w')
+        gapsL = open(basename+'.gaps.L.fa', 'w')
+        gapsR = open(basename+'.gaps.R.fa', 'w')
+        # Open gap BED table output
+        try:
             gapTableOut = open(self.options.gapOutput,'w')
-        # Implementing new flank extraction procedure
-        reference = Fasta(self.options.scaffolds)
+        except Exception:
+            print "Error creating gap table, please specify -g"
+            return
+        # Load the reference Fasta file
+        try:
+            reference = Fasta(self.options.scaffolds)
+        except Exception:
+            print "Cannot open reference Fasta, please check that file exists"
+            return
+        # Implementing flank extraction procedure
         for scaf in reference:
             # Extract scaffold end sequences
             seq = str(scaf)
-            if 'N' not in seq[:self.options.flankSize]:
-                flankOutput.write(">"+str(scaf.name)+'.end.L\n'+seq[:self.options.flankSize]+'\n')
-            if 'N' not in seq[-self.options.flankSize:]:
-                flankOutput.write(">"+str(scaf.name)+'.end.R\n'+seq[-self.options.flankSize:]+'\n')
+            endsL.write(">"+str(scaf.name)+'.end.L\n'+seq[:self.options.flankSize]+'\n')
+            endsR.write(">"+str(scaf.name)+'.end.R\n'+seq[-self.options.flankSize:]+'\n')
             # Determine gap coordinates in scaffold
             gapCoords = []
             query = "[^Nn]([Nn]{%d,%d})[^Nn]"
@@ -74,8 +94,6 @@ class Setup():
                 gapCoords.append((gap.start()+1, gap.end()-1))
             # Continue if no gaps are found
             if len(gapCoords) == 0:
-                gapTableOut.write("\t".join([str(scaf.name), 'na', 'na'])+'\n')
-                logging.debug("Scaffold %s is empty" % str(scaf.name))
                 continue
             # Consolidate gaps that are too close -- indicating low quality regions.
             i = 0
@@ -88,17 +106,17 @@ class Setup():
             # Iterate through gaps and write flanks to fasta, coordinates to bed
             for i, coords in enumerate(gapCoords):
                 gapStart, gapEnd = coords
-                if self.options.gapOutput is not None:
-                    gapTableOut.write("%s\t%i\t%i" % (scaff.name, gapStart, gapEnd))
+                gapTableOut.write("%s\t%i\t%i" % (str(scaff.name), gapStart, gapEnd))
                 flankL = seq[gapStart-self.options.flankSize:gapStart]
                 flankR = seq[gapEnd:gapEnd+self.options.flankSize]
-                flankOutput.write('>'+str(scaf.name)+'.gap.'+str(i+1)+'.L\n'+flankL+'\n')
-                flankOutput.write('>'+str(scaf.name)+'.gap.'+str(i+1)+'.R\n'+flankR+'\n')
+                gapsL.write('>'+str(scaf.name)+'.gap.'+str(i+1)+'.L\n'+flankL+'\n')
+                gapsR.write('>'+str(scaf.name)+'.gap.'+str(i+1)+'.R\n'+flankR+'\n')
         # Close shop
-        flankOutput.close()
-        if self.options.gapOutput is not None:
-            gapTableOut.close()
-        logging.info("Finished!")
+        endsL.close()
+        endsR.close()
+        gapsL.close()
+        gapsR.close()
+        gapTableOut.close()
 
 if __name__ == '__main__':
     setup = Setup()
