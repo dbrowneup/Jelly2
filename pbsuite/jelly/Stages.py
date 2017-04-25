@@ -36,7 +36,7 @@ def setup(scaffoldName, gapInfoName, extras):
     ret = Command(command, "setup", os.path.join(baseName,"setup.out"), os.path.join(baseName,"setup.err"))
     return ret
 
-def mapping(reads, scaffoldName, parameters):
+def mapping(reads, scaffoldName, blasr_params):
     """
     Please deploy BLASR v5.3+ with Pitchfork
     You will also need SAMtools
@@ -55,10 +55,10 @@ def mapping(reads, scaffoldName, parameters):
 
     # Run the BLASR mapping jobs
     basename = '.'.join(scaffoldName.split('.')[:-1])
-    endsL = {"reads": reads, "flanks": basename+'_ends.L.fa', "out": basename+"_ends.L.bam", "param": parameters}
-    endsR = {"reads": reads, "flanks": basename+'_ends.R.fa', "out": basename+"_ends.R.bam", "param": parameters}
-    gapsL = {"reads": reads, "flanks": basename+'_gaps.L.fa', "out": basename+"_gaps.L.bam", "param": parameters}
-    gapsR = {"reads": reads, "flanks": basename+'_gaps.R.fa', "out": basename+"_gaps.R.bam", "param": parameters}
+    endsL = {"reads": reads, "flanks": basename+'_ends.L.fa', "out": basename+"_ends.L.bam", "param": blasr_params}
+    endsR = {"reads": reads, "flanks": basename+'_ends.R.fa', "out": basename+"_ends.R.bam", "param": blasr_params}
+    gapsL = {"reads": reads, "flanks": basename+'_gaps.L.fa', "out": basename+"_gaps.L.bam", "param": blasr_params}
+    gapsR = {"reads": reads, "flanks": basename+'_gaps.R.fa', "out": basename+"_gaps.R.bam", "param": blasr_params}
     mappingTemplate = Template("blasr ${reads} ${flanks} --bam --out ${out} --hitPolicy allbest ${param}")
     mappingJobs = [endsL, endsR, gapsL, gapsR]
     for job in mappingJobs:
