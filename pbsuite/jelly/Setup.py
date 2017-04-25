@@ -2,23 +2,24 @@
 
 import os
 import re
+import sys
 import argparse
 
 from pyfaidx import Fasta
 
-def USAGE():
+def usage():
     return """
     python Setup.py [<options>] <inputScaffolding.fasta>
 
     Take the input scaffolds, identify gaps, and extract flanking regions.
     The sequences flanking gaps, as well as the scaffold ends, are written
-    to a new Fasta file, for the alignment of PacBio reads. By aligning only
-    to sequences flanking gaps, we save time and increase specificity.
+    to new Fasta files, for the alignment of PacBio reads. By aligning only
+    to flanking sequences, we save time and increase specificity.
     """
 
 class Setup():
     def __init__(self):
-        parser = argparse.ArgumentParser(description='process input for jelly2 pipeline', usage=USAGE())
+        parser = argparse.ArgumentParser(description='process input for jelly2 pipeline', usage=usage())
         parser.add_argument('scaffolds', action='store', help='The input scaffolds in Fasta format')
         parser.add_argument('-g', '--gapOutput', dest='gapOutput', \
             help="Create the table for gapInformation", default=None)
@@ -30,9 +31,9 @@ class Setup():
             help='Number of extracted bases flanking gaps and scaffold ends, default=1000')
         self.options = parser.parse_args()
         if not os.path.isfile(self.options.scaffolds):
-            parser.error("Error! Scaffold File is not a file / does not exist")
-        if not self.options.scaffolds.endswith(".fasta") or not self.options.scaffolds.endswith(".fa"):
-            parser.error("Reference must end in extension .fasta or .fa! Please rename it.")
+            sys.exit("Error! Scaffold File is not a file / does not exist")
+        if not self.options.scaffolds.endswith(".fasta") and not self.options.scaffolds.endswith(".fa"):
+            sys.exit("Reference must end in extension .fasta or .fa! Please rename it.")
 
     def run(self):
         """
@@ -64,22 +65,20 @@ class Setup():
         """
         # Open Fasta output files
         basename = '.'.join(self.options.scaffolds.split('.')[:-1])
-        endsL = open(basename+'.ends.L.fa', 'w')
-        endsR = open(basename+'.ends.R.fa', 'w')
-        gapsL = open(basename+'.gaps.L.fa', 'w')
-        gapsR = open(basename+'.gaps.R.fa', 'w')
+        endsL = open(basename+'_ends.L.fa', 'w')
+        endsR = open(basename+'_ends.R.fa', 'w')
+        gapsL = open(basename+'_gaps.L.fa', 'w')
+        gapsR = open(basename+'_gaps.R.fa', 'w')
         # Open gap BED table output
         try:
             gapTableOut = open(self.options.gapOutput,'w')
         except Exception:
-            print "Error creating gap table, please specify -g"
-            return
+            gapTableOut = open(basename+'_gapInfo.bed', 'w')
         # Load the reference Fasta file
         try:
             reference = Fasta(self.options.scaffolds)
         except Exception:
-            print "Cannot open reference Fasta, please check that file exists"
-            return
+            sys.exit("Cannot open reference Fasta, please check file integrity")
         # Implementing flank extraction procedure
         for scaf in reference:
             # Extract scaffold end sequences
