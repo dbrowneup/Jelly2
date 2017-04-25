@@ -3,6 +3,7 @@ import os
 import sys
 import glob
 import logging
+import subprocess
 from string import Template
 
 from pbsuite.utils.CommandRunner import Command
@@ -35,72 +36,86 @@ def setup(scaffoldName, gapInfoName, extras):
     ret = Command(command, "setup", os.path.join(baseName,"setup.out"), os.path.join(baseName,"setup.err"))
     return ret
 
-def mapping(jobDirs, outDir, reference, referenceSa, parameters, extras):
+def mapping(reads, scaffoldName, parameters):
     """
+    Please deploy BLASR v5.3+ with Pitchfork
+    You will also need SAMtools
     Input:
-        - a list of fasta inputs
-        - an output directory
-        - a reference - (should be contigs.. see scaffoldIntakeSetup
-        - a pacbio indexed reference
+        - PacBio reads (must be in PacBio BAM format)
+        - Flank files from Setup
     Task:
-        - map each fasta to reference
+        - Map PacBio reads to flanks
     Output:
-        - m4 alignments of the input sequence
+        - Indexed BAM files of alignments
     """
-    logFormat = "%(asctime)s [%(levelname)s] %(message)s"
-    level = "DEBUG" if DEBUG != "" else "INFO"
-    logging.basicConfig( stream=sys.stderr, level=level, format=logFormat )
-    logging.info("Running blasr")
-    
-    mappingTemplate = Template("blasr ${fasta} ${ref} ${sa} -m 4 --out ${outFile} ${parameters} ")
-    tailTemplate = Template("m4pie.py ${outFile} ${fasta} ${ref} --nproc ${nproc} -i ${extras}")
-    
-    ret = []
-    #sa safety
-    if os.path.exists(referenceSa):
-        referenceSa = "--sa " + referenceSa
-    else:
-        logging.critical("Specified reference.sa %s does not exists. Mapping will be slower" % (referenceSa))
-        referenceSa = ""
-    
-    for fasta in jobDirs:
-        name = fasta[fasta.rindex('/')+1:]
-        
-        if not os.path.exists(fasta):
-            logging.error("%s doesn't exist." % fasta)
-            exit(1)
-        
-        outFile = os.path.join(outDir,name+".m4")
-        if os.path.isfile(outFile):
-            logging.warning("Output File %s already exists and will be overwritten." % (outFile))
-        
-        #Build Blasr Command 
-        nprocRe = re.compile("-nproc (\d+)")
-        np = nprocRe.findall(parameters + extras)
-        if len(np) == 0:
-            np = '1'
-        else:
-            np = np[-1]
+#    logFormat = "%(asctime)s [%(levelname)s] %(message)s"
+#    level = "DEBUG" if DEBUG != "" else "INFO"
+#    logging.basicConfig( stream=sys.stderr, level=level, format=logFormat )
+#    logging.info("Running blasr")
 
-        cmd = mappingTemplate.substitute( {"fasta":fasta, 
-                           "ref":reference, 
-                           "sa":referenceSa, 
-                           "outFile":outFile, 
-                           "parameters":parameters,
-                           "extras":extras} )
-        cmd2= tailTemplate.substitute( {"fasta":fasta,
-                           "ref":reference,
-                           "outFile":outFile,
-                           "nproc": np,
-                           "extras":extras} )
-        fullCmd = cmd + "\n" + cmd2
-        #Build Command to send to CommandRunner 
-        jobname = name+".mapping"
-        stdout = os.path.join(outDir, name+".out")
-        stderr = os.path.join(outDir, name+".err")
-        ret.append( Command(fullCmd, jobname, stdout, stderr) )
+    # Run the BLASR mapping jobs
+    basename = '.'.join(scaffoldName.split('.')[:-1])
+    endsL = {"reads": reads, "flanks": basename+'_ends.L.fa', "out": basename+"_ends.L.bam", "param": parameters}
+    endsR = {"reads": reads, "flanks": basename+'_ends.R.fa', "out": basename+"_ends.R.bam", "param": parameters}
+    gapsL = {"reads": reads, "flanks": basename+'_gaps.L.fa', "out": basename+"_gaps.L.bam", "param": parameters}
+    gapsR = {"reads": reads, "flanks": basename+'_gaps.R.fa', "out": basename+"_gaps.R.bam", "param": parameters}
+    mappingTemplate = Template("blasr ${reads} ${flanks} --bam --out ${out} --hitPolicy allbest ${param}")
+    mappingJobs = [endsL, endsR, gapsL, gapsR]
+    for job in mappingJobs:
+        subprocess.call(mappingTemplate.substitute(job).split(' '))
+    # Index the BAM alignment files
+    endsL = {"aligns": basename+"_ends.L.bam"}
+    endsR = {"aligns": basename+"_ends.R.bam"}
+    gapsL = {"aligns": basename+"_gaps.L.bam"}
+    gapsR = {"aligns": basename+"_gaps.R.bam"}
+    indexingTemplate = Template("samtools index ${aligns}")
+    indexingJobs = [endsL, endsR, gapsL, gapsR]
+    for job in indexingJobs:
+        subprocess.call(indexingTemplate.substitute(job).split(' '))
+
+#   tailTemplate = Template("m4pie.py ${outFile} ${fasta} ${ref} --nproc ${nproc} -i ${extras}")
     
-    return ret
+#    ret = []
+#    #sa safety
+#    if os.path.exists(referenceSa):
+#        referenceSa = "--sa " + referenceSa
+#    else:
+#        logging.critical("Specified reference.sa %s does not exists. Mapping will be slower" % (referenceSa))
+#        referenceSa = ""
+    
+#    for fasta in jobDirs:
+#        name = fasta[fasta.rindex('/')+1:]
+#        
+#        if not os.path.exists(fasta):
+#            logging.error("%s doesn't exist." % fasta)
+#            exit(1)
+#        
+#        outFile = os.path.join(outDir,name+".m4")
+#        if os.path.isfile(outFile):
+#            logging.warning("Output File %s already exists and will be overwritten." % (outFile))
+#        
+#        #Build Blasr Command 
+#        nprocRe = re.compile("-nproc (\d+)")
+#        np = nprocRe.findall(parameters + extras)
+#        if len(np) == 0:
+#            np = '1'
+#        else:
+#            np = np[-1]
+#
+#
+#        cmd2= tailTemplate.substitute( {"fasta":fasta,
+#                           "ref":reference,
+#                           "outFile":outFile,
+#                           "nproc": np,
+#                           "extras":extras} )
+#        fullCmd = cmd + "\n" + cmd2
+#        #Build Command to send to CommandRunner 
+#        jobname = name+".mapping"
+#        stdout = os.path.join(outDir, name+".out")
+#        stderr = os.path.join(outDir, name+".err")
+#        ret.append( Command(fullCmd, jobname, stdout, stderr) )
+#    
+#    return ret
 
 
 def support(inputDir, gapTable, outputDir, extras):
