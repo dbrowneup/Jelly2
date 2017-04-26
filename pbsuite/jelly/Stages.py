@@ -55,14 +55,17 @@ def mapping(reads, scaffoldName, blasr_params):
 
     # Run the BLASR mapping jobs
     basename = '.'.join(scaffoldName.split('.')[:-1])
-    endsL = {"reads": reads, "flanks": basename+'_ends.L.fa', "out": basename+"_ends.L.bam", "param": blasr_params}
-    endsR = {"reads": reads, "flanks": basename+'_ends.R.fa', "out": basename+"_ends.R.bam", "param": blasr_params}
-    gapsL = {"reads": reads, "flanks": basename+'_gaps.L.fa', "out": basename+"_gaps.L.bam", "param": blasr_params}
-    gapsR = {"reads": reads, "flanks": basename+'_gaps.R.fa', "out": basename+"_gaps.R.bam", "param": blasr_params}
-    mappingTemplate = Template("blasr ${reads} ${flanks} --bam --out ${out} --hitPolicy allbest ${param}")
+    endsL = {"map": {"reads": reads, "flanks": basename+'_ends.L.fa', "param": blasr_params}, "out": basename+"_ends.L.bam"}
+    endsR = {"map": {"reads": reads, "flanks": basename+'_ends.R.fa', "param": blasr_params}, "out": basename+"_ends.R.bam"}
+    gapsL = {"map": {"reads": reads, "flanks": basename+'_gaps.L.fa', "param": blasr_params}, "out": basename+"_gaps.L.bam"}
+    gapsL = {"map": {"reads": reads, "flanks": basename+'_gaps.R.fa', "param": blasr_params}, "out": basename+"_gaps.R.bam"}
+    mappingTemplate = Template("blasr ${reads} ${flanks} --bam --hitPolicy allbest ${param}")
     mappingJobs = [endsL, endsR, gapsL, gapsR]
     for job in mappingJobs:
-        subprocess.call(mappingTemplate.substitute(job).split(' '))
+        with open(job["out"]) as output:
+            p1 = subprocess.Popen(mappingTemplate.substitute(job["map"]).split(' '), stdout=subprocess.PIPE)
+            p2 = subprocess.Popen('samtools view -F4 -b'.split(' '), stdin=p1.stdout, stdout=output)
+            p2.communicate()
     # Index the BAM alignment files
     endsL = {"aligns": basename+"_ends.L.bam"}
     endsR = {"aligns": basename+"_ends.R.bam"}

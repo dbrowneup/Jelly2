@@ -19,7 +19,7 @@ from pbsuite.jelly import Stages
 from pbsuite.utils.setupLogging import *
 from pbsuite.utils.CommandRunner import * 
 
-def USAGE():
+def usage():
     return """
     USAGE: Jelly.py <stage> <protocol.xml> [-x "<options for stage>"]
     
@@ -110,7 +110,7 @@ class JellyRunner():
     """
     def __init__(self):
         # Parse arguments: $ python Jelly.py <stage> <protocol> [-x "<options>"]
-        parser = argparse.ArgumentParser(description='jelly2 genome improvement tool', usage=USAGE())
+        parser = argparse.ArgumentParser(description='jelly2 genome improvement tool', usage=usage())
         parser.add_argument('stage', help="the stage you're trying to run", action='store')
         parser.add_argument('protocol', help='XML-formatted protocol file', action='store')
         parser.add_argument('-x', help="options to pass into the stage you're running",
