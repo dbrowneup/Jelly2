@@ -11,7 +11,7 @@ from pyfaidx import Fasta
 
 def usage():
     return """
-    USAGE: python Support2.py [<options>] <Scaffolds.fa> <gapInfo.bed>
+    USAGE: python Support2.py [options] <Scaffolds.fa> <gapInfo.bed>
 
     This program will load the reference Fasta containing the scaffold sequences,
     the BAM alignment files of PacBio reads to flanks, and the BED table containing
@@ -21,8 +21,8 @@ def usage():
     good support will be treated as gaps and filled, joining the scaffolds. The
     output of this program is a directory with sub-directories for each supported 
     gap in the assembly. Contained in each sub-directory are the reads that bridge
-    that gap in FastQ format. These will subsequently be assembled with minimap/miniasm
-    and polished with minimap/racon.
+    that gap in FastQ format. These will subsequently be assembled with Minimap/Miniasm
+    and polished with BLASR/Arrow.
     """
 
 
@@ -107,8 +107,6 @@ def main():
             with open(path+'/reads.fq', 'a') as output:
                 for line in fastq:
                 	output.write(line)
-
-
 
 if __name__ == '__main__':
 	main()

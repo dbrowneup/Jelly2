@@ -9,7 +9,7 @@ from pyfaidx import Fasta
 
 def usage():
     return """
-    python Setup.py [<options>] <inputScaffolding.fasta>
+    python Setup.py [options] <inputScaffolding.fasta>
 
     Take the input scaffolds, identify gaps, and extract flanking regions.
     The sequences flanking gaps, as well as the scaffold ends, are written
