@@ -27,17 +27,8 @@ def usage():
 
 
 """
-This Class is intended to store gap information, including the gap coordinates,
-the flanking sequences, and the bridging PacBio reads
-"""
-class GapGraph():
-	def __init__(self):
-		self.G = nx.DiGraph()
-
-
-"""
-This Class will hold the scaffold information, including the inter-gap sequences,
-the set of GapGraph objects, and edges between scaffold ends
+This Class will hold the scaffold information, including the inter-gap 
+sequences and edges between scaffold ends
 """
 class ScaffoldGraph():
 	def __init__(self):
