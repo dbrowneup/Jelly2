@@ -65,8 +65,8 @@ class Setup():
         """
         # Open Fasta output files
         basename = '.'.join(self.options.scaffolds.split('.')[:-1])
-        endsL = open(basename+'_ends.L.fa', 'w')
-        endsR = open(basename+'_ends.R.fa', 'w')
+#        endsL = open(basename+'_ends.L.fa', 'w')
+#        endsR = open(basename+'_ends.R.fa', 'w')
         gapsL = open(basename+'_gaps.L.fa', 'w')
         gapsR = open(basename+'_gaps.R.fa', 'w')
         # Open gap BED table output
@@ -83,8 +83,8 @@ class Setup():
         for scaf in reference:
             # Extract scaffold end sequences
             seq = str(scaf)
-            endsL.write(">"+str(scaf.name)+'.end.L\n'+seq[:self.options.flankSize]+'\n')
-            endsR.write(">"+str(scaf.name)+'.end.R\n'+seq[-self.options.flankSize:]+'\n')
+#            endsL.write(">"+str(scaf.name)+'.end.L\n'+seq[:self.options.flankSize]+'\n')
+#            endsR.write(">"+str(scaf.name)+'.end.R\n'+seq[-self.options.flankSize:]+'\n')
             # Determine gap coordinates in scaffold
             gapCoords = []
             query = "[^Nn]([Nn]{%d,%d})[^Nn]"
@@ -111,8 +111,8 @@ class Setup():
                 gapsL.write('>'+str(scaf.name)+'.gap.'+str(i+1)+'.L\n'+flankL+'\n')
                 gapsR.write('>'+str(scaf.name)+'.gap.'+str(i+1)+'.R\n'+flankR+'\n')
         # Close shop
-        endsL.close()
-        endsR.close()
+#        endsL.close()
+#        endsR.close()
         gapsL.close()
         gapsR.close()
         gapTableOut.close()

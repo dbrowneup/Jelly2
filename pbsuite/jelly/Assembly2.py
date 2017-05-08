@@ -40,23 +40,23 @@ def main():
     assemblyTemplate = Template("miniasm ${params} -f ${reads} ${aligns}")
     assemblyKey = {"params", args.miniasm, "reads": reads_path, "aligns": align_path}
     with open(graph_path, 'w') as output:
-        p1 = subprocess.Popen(assemblyTemplate.substitute(assemblyKey).split(' '), stdout=output)
-        p1.communicate()
+        p3 = subprocess.Popen(assemblyTemplate.substitute(assemblyKey).split(' '), stdout=output)
+        p3.communicate()
     with open(fasta_path, 'w') as output:
-        p1 = subprocess.Popen(str("""awk '/^S/{print(">"$2"\n"$3)}' """+graph_path).split(' '), stdout=output)
-        p1.communicate()
+        p4 = subprocess.Popen(str("""awk '/^S/{print(">"$2"\n"$3)}' """+graph_path).split(' '), stdout=output)
+        p4.communicate()
     # Map reads against assembly
     mappingKey = {"params": "", "target": fasta_path, "query": reads_path}
     align_path = 'Gap_Support/'+args.gapName+'/consensus.paf'
     with open(align_path, 'w') as output:
-        p1 = subprocess.Popen(mappingTemplate.substitute(mappingKey).split(' '), stdout=output)
-        p1.communicate()
+        p5 = subprocess.Popen(mappingTemplate.substitute(mappingKey).split(' '), stdout=output)
+        p5.communicate()
     # Generate consensus
     final_path = 'Gap_Support/'_args.gapName+'/consensus.fa'
     consensusTemplate = Template('racon ${params} ${reads} ${aligns} ${graph} ${final}')
     consensusKey = {"params": args.racon, "reads": reads_path, "aligns": align_path, "graph": graph_path, "final": final_path}
-    p1  = subprocess.Popen(consensusTemplate.substitute(consensusKey).split(' '))
-    p1.communicate()
+    p6  = subprocess.Popen(consensusTemplate.substitute(consensusKey).split(' '))
+    p6.communicate()
 
 if __name__ = '__main__':
     main()

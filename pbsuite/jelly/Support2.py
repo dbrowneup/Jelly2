@@ -30,9 +30,9 @@ def usage():
 This Class will hold the scaffold information, including the inter-gap 
 sequences and edges between scaffold ends
 """
-class ScaffoldGraph():
-	def __init__(self):
-		self.G = nx.DiGraph()
+#class ScaffoldGraph():
+#	def __init__(self):
+#		self.G = nx.DiGraph()
 
 
 """
@@ -41,8 +41,8 @@ the BED table of gap coordinates, and the reference Fasta file
 """
 class ReadParser():
     def __init__(self, basename):
-    	self.endsL = pysam.AlignmentFile(basename+'_ends.L.bam', 'rb')
-    	self.endsR = pysam.AlignmentFile(basename+'_ends.R.bam', 'rb')
+#    	self.endsL = pysam.AlignmentFile(basename+'_ends.L.bam', 'rb')
+#    	self.endsR = pysam.AlignmentFile(basename+'_ends.R.bam', 'rb')
     	self.gapsL = pysam.AlignmentFile(basename+'_gaps.L.bam', 'rb')
     	self.gapsR = pysam.AlignmentFile(basename+'_gaps.R.bam', 'rb')
 
