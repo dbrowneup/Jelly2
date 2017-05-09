@@ -60,7 +60,7 @@ def main():
     # Load BAM alignments, gap BED table, reference Fasta file
     basename = '.'.join(self.options.scaffolds.split('.')[:-1])
     reads = ReadParser(basename)
-    gaps_L = open(args.gap_info, 'r').read().split('\n')
+    gaps_L = open(args.gap_info, 'r').read().split('\n')[:-1]
     gaps_L = [x.split('\t') for x in gaps_L]
     gaps_D = {x[0]: [(x[1], x[2])] if x[0] not in gaps_D else gaps_D[x[0]].append((x[1], x[2])) for x in gaps_L}
     ref = Fasta(args.scaffolds)
@@ -93,7 +93,7 @@ def main():
             if len(fastq) < args.min_reads:
                 continue
             # Create sub-directory and write FastQ output
-            path = 'Gap_Support/'+str(scaf.name)+'.gap.'+str(i)
+            path = 'Gap_Support/'+str(scaf.name)+'.gap.'+str(i+1)
             os.mkdir(path)
             with open(path+'/reads.fq', 'a') as output:
                 for line in fastq:

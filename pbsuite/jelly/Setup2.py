@@ -105,7 +105,7 @@ class Setup():
             # Iterate through gaps and write flanks to fasta, coordinates to bed
             for i, coords in enumerate(gapCoords):
                 gapStart, gapEnd = coords
-                gapTableOut.write("%s\t%i\t%i" % (str(scaff.name), gapStart, gapEnd))
+                gapTableOut.write("%s\t%i\t%i\n" % (str(scaff.name), gapStart, gapEnd))
                 flankL = seq[gapStart-self.options.flankSize:gapStart]
                 flankR = seq[gapEnd:gapEnd+self.options.flankSize]
                 gapsL.write('>'+str(scaf.name)+'.gap.'+str(i+1)+'.L\n'+flankL+'\n')
