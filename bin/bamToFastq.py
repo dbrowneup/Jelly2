@@ -1,1 +1,0 @@
-../pbsuite/utils/bamToFastq.py

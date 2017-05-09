@@ -1,3 +1,0 @@
-samtools view -bt $1 $2 | samtools sort - ${2%.*}.sort
-mv ${2%.*}.sort.bam ${2%.*}.bam
-samtools index ${2%.*}.bam
