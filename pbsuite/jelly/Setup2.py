@@ -90,7 +90,7 @@ class Setup():
             query = "[^Nn]([Nn]{%d,%d})[^Nn]"
             param = (self.options.minGap, self.options.maxGap)
             for gap in re.finditer(query % param, seq):
-                gapCoords.append((gap.start()+1, gap.end()-1))
+                gapCoords.append((gap.start(), gap.end()))
             # Continue if no gaps are found
             if len(gapCoords) == 0:
                 continue

@@ -19,10 +19,41 @@ class Placement():
         for scaf, gaps in gap_D.iteritems():
             for i, g in enumerate(gaps):
                 try:
-                    seq = Fasta('Gap_Support/'+str(scaf)+'.gap.'+str(i+1)+'/consensus.fa'
-                    if sum(1 for _ in seq) == 1:
-                        gap_D[scaf][i].append(str(seq))
+                    seq = [str(f) for f in Fasta('Gap_Support/'+str(scaf)+'.gap.'+str(i+1)+'/consensus.fa')]
+                    if len(seq) == 1:
+                        gap_D[scaf][i].append(str(seq[0]))
                     else:
                     	continue
                 except IOError:
                     continue
+        return gap_D
+
+    def fill_gaps(self, output):
+        with open(output, 'w') as out:
+            for scaf in self.ref:
+            	# Try to load gaps, but if scaffold has no gaps, write to output and continue
+                try:
+                    gaps = gap_D[str(scaf.name)]
+                except KeyError:
+                    out.write('>'+str(scaf.name)+'\n'+str(scaf)+'\n')
+                    continue
+                # If gaps were loaded, parse and write to output
+                last_index = 0
+                scaffold = list()
+                for i, g in enumerate(gaps):
+                	# Load scaffold sequence preceding gap
+                    scaffold.append(scaf[last_index:g[0]])
+                    # Load fill sequence if gap was assembled, else fill with N
+                    try:
+                        scaffold.append(g[2])
+                    except IndexError:
+                        scaffold.append('N' * (g[1] - g[0]))
+                    # Move marker to end of current gap
+                    last_index = g[1]
+                else:
+                	# Load final stretch of scaffold sequence past last gap
+                    scaffold.append(scaf[last_index:])
+                # Write scaffold to output
+                out.write('>'+str(scaf.name)+'\n'+''.join(scaffold)+'\n')
+
+
