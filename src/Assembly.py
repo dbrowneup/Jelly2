@@ -26,7 +26,7 @@ class Assembly():
             graph_path = 'Gap_Support/'+gap[0]+'/assembly.gfa'
             fasta_path = 'Gap_Support/'+gap[0]+'/assembly.fa'
             assemblyTemplate = Template("miniasm ${params} -f ${reads} ${aligns}")
-            assemblyKey = {"params", args.miniasm, "reads": reads_path, "aligns": align_path}
+            assemblyKey = {"params": args.miniasm, "reads": reads_path, "aligns": align_path}
             with open(graph_path, 'w') as output:
                 p3 = subprocess.Popen(assemblyTemplate.substitute(assemblyKey).split(' '), stdout=output)
                 p3.communicate()
