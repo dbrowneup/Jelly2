@@ -56,7 +56,7 @@ def main():
         help='Number of extracted bases flanking gaps and scaffold ends, default=1000')
     # Arguments for Support
     support_args = parser.add_argument_group('Support')
-    support_args.add_argument('-m', '--min_reads', dest='min_reads', type=int, default=5, \
+    support_args.add_argument('-d', '--min_reads', dest='min_reads', type=int, default=5, \
         help='The minimum number of reads required to support a gap')
     support_args.add_argument('-w', '--wiggle', dest='wiggle', type=int, default=0.5, \
         help='The percentage of deviation allowed from predicted gap size')
