@@ -1,7 +1,5 @@
 #!/usr/bin/env python
 
-import argparse
-
 from pyfaidx import Fasta
 
 class Placement():

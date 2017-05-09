@@ -32,24 +32,15 @@ class Setup():
         self.options = parser.parse_args()
         if not os.path.isfile(self.options.scaffolds):
             sys.exit("Error! Scaffold File is not a file / does not exist")
-        if not self.options.scaffolds.endswith(".fasta") and not self.options.scaffolds.endswith(".fa"):
-            sys.exit("Reference must end in extension .fasta or .fa! Please rename it.")
 
     def run(self):
         """
-        Output stream is 4 separate Fasta files containing left and right flanking
-        sequences for scaffolds and gaps within them. PacBio reads can then be aligned
+        Output stream is 2 separate Fasta files containing left and right flanking
+        sequences for gaps identified in the scaffolds. PacBio reads can then be aligned
         to each Fasta file separately, selecting the best hit for each read. The alignments
         can then be loaded into memory and reads that bridge gaps can be identified.
 
         Fasta header output format:
-            Scaffold_ends.L.fa
-            >Scaffold_1.end.L
-            ATGC
-
-            Scaffold_ends.R.fa
-            >Scaffold_1.end.R
-            ATGC
 
             Scaffold_gaps.L.fa
             >Scaffold_1.gap.1.L
@@ -65,27 +56,22 @@ class Setup():
         """
         # Open Fasta output files
         basename = '.'.join(self.options.scaffolds.split('.')[:-1])
-#        endsL = open(basename+'_ends.L.fa', 'w')
-#        endsR = open(basename+'_ends.R.fa', 'w')
         gapsL = open(basename+'_gaps.L.fa', 'w')
         gapsR = open(basename+'_gaps.R.fa', 'w')
         # Open gap BED table output
         try:
             gapTableOut = open(self.options.gapOutput,'w')
-        except Exception:
+        except IOError:
             gapTableOut = open(basename+'_gapInfo.bed', 'w')
         # Load the reference Fasta file
         try:
             reference = Fasta(self.options.scaffolds)
-        except Exception:
+        except IOError:
             sys.exit("Cannot open reference Fasta, please check file integrity")
         # Implementing flank extraction procedure
         for scaf in reference:
-            # Extract scaffold end sequences
-            seq = str(scaf)
-#            endsL.write(">"+str(scaf.name)+'.end.L\n'+seq[:self.options.flankSize]+'\n')
-#            endsR.write(">"+str(scaf.name)+'.end.R\n'+seq[-self.options.flankSize:]+'\n')
             # Determine gap coordinates in scaffold
+            seq = str(scaf)
             gapCoords = []
             query = "[^Nn]([Nn]{%d,%d})[^Nn]"
             param = (self.options.minGap, self.options.maxGap)
@@ -111,8 +97,6 @@ class Setup():
                 gapsL.write('>'+str(scaf.name)+'.gap.'+str(i+1)+'.L\n'+flankL+'\n')
                 gapsR.write('>'+str(scaf.name)+'.gap.'+str(i+1)+'.R\n'+flankR+'\n')
         # Close shop
-#        endsL.close()
-#        endsR.close()
         gapsL.close()
         gapsR.close()
         gapTableOut.close()
