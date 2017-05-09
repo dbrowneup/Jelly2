@@ -1,23 +1,16 @@
-# PBSuite
+# Jelly2
 
-This package was originally developed by Adam English to utilize PacBio long reads for gap filling and analysis of structural variants.
-
-# jelly2
-
-In this copy of the package, I am stripping out the functions for analysis of structural variants and re-factoring the gap filling module to reflect the latest developments in PacBio technology and Python conventions.
-
-Thus the focus of this work is to improve the gap filling and scaffolding capabilities of the jelly module within PBSuite. The goal is to yield an updated and improved version of jelly for finishing de novo genome assemblies.
+This project started out as a hack of PBJelly in an attempt to improve the efficiency of the code. I ended up rebuilding the core pipeline, focusing it down into four stages: Setup, Support, Assembly, and Placement. The stages are managed by a single driver script, `Jelly2.py`, making this program fairly straightforward to use. To see the usage, run `$ python Jelly2.py --help`. Make sure that the `src` directory is in your `PYTHONPATH` variable, so the driver script can find the modules.
 
 # Dependencies
 
 * Python (v2.7)
-* BLASR (https://github.com/PacificBiosciences/blasr)
-* NetworkX (https://github.com/networkx/networkx)
-* Pysam (https://github.com/pysam-developers/pysam)
-* Minimap (https://github.com/lh3/minimap)
-* Miniasm (https://github.com/lh3/miniasm)
-* Racon (https://github.com/isovic/racon)
+* (BLASR)[https://github.com/PacificBiosciences/blasr]
+* (pysam)[https://github.com/pysam-developers/pysam]
+* (Minimap)[https://github.com/lh3/minimap]
+* (Miniasm)[https://github.com/lh3/miniasm]
+* (Racon)[https://github.com/isovic/racon]
 
 # Design Philosophy
 
-BLASR is used to conduct the initial alignment of PacBio reads to the draft genome sequences, finding reads that span gaps. A NetworkX graph is constructed to store the gap information, as well as add new gaps detected from the alignment that were not in the original assembly. Gap sequences are assembled with Minimap (overlap), Miniasm (layout), and Racon (consensus). Assembled gap sequences are then inserted into the original assembly and the new sequences are written into a Fasta file.
+To find PacBio reads that span the gaps predicted in the scaffolds, gap-flanking sequences are extracted from the assembly. Separate Fasta files are created for the left flanks and the right flanks. The PacBio reads are then aligned against each flank file with BLASR. Supporting reads are those that align to each flank, spanning the predicted gap size within a certain margin of error. If there are enough support reads for a gap, the reads will be assembled with Minimap and Miniasm. A consensus will be determined with Minimap and Racon. If the assembled gap sequence passes quality control, it will be placed into the scaffold, filling the gap.
