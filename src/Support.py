@@ -20,7 +20,7 @@ class Support():
         mappingTemplate = Template("blasr ${reads} ${flanks} --bam --out ${out} --hitPolicy allbest ${param}")
         mappingJobs = [gapsL, gapsR]
         for job in mappingJobs:
-            p1 = subprocess.Popen(mappingTemplate.substitute(job).split(' '), stdout=output)
+            p1 = subprocess.Popen(mappingTemplate.substitute(job).split(' '))
             p1.communicate()
         # Index the BAM alignment files
         gapsL = {"aligns": basename+"_gaps.L.bam"}
