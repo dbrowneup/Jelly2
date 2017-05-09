@@ -44,7 +44,7 @@ class Setup():
             # Iterate through gaps and write flanks to fasta, coordinates to bed
             for i, coords in enumerate(gapCoords):
                 gapStart, gapEnd = coords
-                gapTableOut.write("%s\t%i\t%i\n" % (str(scaff.name), gapStart, gapEnd))
+                gapTableOut.write("%s\t%i\t%i\n" % (str(scaf.name), gapStart, gapEnd))
                 flankL = seq[gapStart-args.flank_size:gapStart]
                 flankR = seq[gapEnd:gapEnd+args.flank_size]
                 gapsL.write('>'+str(scaf.name)+'.gap.'+str(i+1)+'.L\n'+flankL+'\n')

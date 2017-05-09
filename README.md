@@ -1,6 +1,12 @@
 # Jelly2
 
-This project started out as a hack of [PBJelly](https://github.com/dbrowneup/PBSuite) in an attempt to improve the efficiency of the code. I ended up rebuilding the core pipeline, focusing it down into four stages: Setup, Support, Assembly, and Placement. The stages are managed by a single driver script, `Jelly2.py`, making this program fairly straightforward to use. To see the usage, run `$ python Jelly2.py --help`. Make sure that the `src` directory is in your `PYTHONPATH` variable, so the driver script can find the modules.
+This project started out as a hack of [PBJelly](https://github.com/dbrowneup/PBSuite) in an attempt to improve the efficiency of the code. I ended up rebuilding the core pipeline, focusing it down into four stages: Setup, Support, Assembly, and Placement. The stages are managed by a single driver script, `Jelly2.py`, making this program fairly straightforward to use. To see the usage, run:
+
+```
+$ python Jelly2.py --help
+```
+
+Make sure that the `src` directory is in your `PYTHONPATH` variable, so the driver script can find the modules. Though this repository was created on May 8, 2017, it contains the git tracking history of the above-linked PBJelly repository in which this project began.
 
 # Dependencies
 

@@ -48,8 +48,8 @@ def main():
     parser.add_argument('subreads', action='store', help='The PacBio subreads in BAM format')
     # Arguments for Setup
     setup_args = parser.add_argument_group('Setup')
-    setup_args.add_argument('-n', '--min_gap', dest='min_gap', type=int, default=25, \
-        help='Minimum number of consecutive Ns to be considered a gap, default=25')
+    setup_args.add_argument('-n', '--min_gap', dest='min_gap', type=int, default=200, \
+        help='Minimum number of consecutive Ns to be considered a gap, default=200')
     setup_args.add_argument('-x', '--max_gap', dest='max_gap', type=int, default=1000000, \
         help='Maximum number of consecutive Ns to be considered a gap, default=Inf')
     setup_args.add_argument('-f', '--flank_size', dest='flank_size', type=int, default=1000, \
@@ -89,8 +89,6 @@ def main():
     # Run Placement
     placement = Placement(args)
     placement.fill_gaps()
-
-
 
 if __name__ == '__main__':
     main()
