@@ -8,7 +8,7 @@ class Placement():
         self.ref = Fasta(scaffolds)
 
     def load_gaps(self, gap_table):
-    	# Open gap table and read file into list
+        # Open gap table and read file into list
         gap_L = open(gap_table).read().split('\n')[:-1]
         gap_L = [x.split('\t') for x in gap_L]
         # Parse table into dictionary where scaffold names are keys
@@ -21,7 +21,7 @@ class Placement():
                     if len(seq) == 1:
                         gap_D[scaf][i].append(str(seq[0]))
                     else:
-                    	continue
+                        continue
                 except IOError:
                     continue
         return gap_D
@@ -29,7 +29,7 @@ class Placement():
     def fill_gaps(self, output):
         with open(output, 'w') as out:
             for scaf in self.ref:
-            	# Try to load gaps, but if scaffold has no gaps, write to output and continue
+                # Try to load gaps, but if scaffold has no gaps, write to output and continue
                 try:
                     gaps = gap_D[str(scaf.name)]
                 except KeyError:
@@ -39,7 +39,7 @@ class Placement():
                 last_index = 0
                 scaffold = list()
                 for i, g in enumerate(gaps):
-                	# Load scaffold sequence preceding gap
+                    # Load scaffold sequence preceding gap
                     scaffold.append(scaf[last_index:g[0]])
                     # Load fill sequence if gap was assembled, else fill with N
                     try:
@@ -49,9 +49,7 @@ class Placement():
                     # Move marker to end of current gap
                     last_index = g[1]
                 else:
-                	# Load final stretch of scaffold sequence past last gap
+                    # Load final stretch of scaffold sequence past last gap
                     scaffold.append(scaf[last_index:])
                 # Write scaffold to output
                 out.write('>'+str(scaf.name)+'\n'+''.join(scaffold)+'\n')
-
-

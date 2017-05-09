@@ -7,65 +7,23 @@ import argparse
 
 from pyfaidx import Fasta
 
-def usage():
-    return """
-    python Setup.py [options] <inputScaffolding.fasta>
-
-    Take the input scaffolds, identify gaps, and extract flanking regions.
-    The sequences flanking gaps, as well as the scaffold ends, are written
-    to new Fasta files, for the alignment of PacBio reads. By aligning only
-    to flanking sequences, we save time and increase specificity.
-    """
-
 class Setup():
     def __init__(self):
-        parser = argparse.ArgumentParser(description='process input for jelly2 pipeline', usage=usage())
-        parser.add_argument('scaffolds', action='store', help='The input scaffolds in Fasta format')
-        parser.add_argument('-g', '--gapOutput', dest='gapOutput', \
-            help="Create the table for gapInformation", default=None)
-        parser.add_argument("--minGap", dest="minGap", type=int, default=25, \
-            help="Minimum number of consecutive Ns to be considered a gap, default=25")
-        parser.add_argument("--maxGap", dest="maxGap", type=int, default=1000000, \
-            help="Maximum number of consecutive Ns to be considered a gap, default=Inf")
-        parser.add_argument('--flankSize', dest='flankSize', type=int, default=1000, \
-            help='Number of extracted bases flanking gaps and scaffold ends, default=1000')
-        self.options = parser.parse_args()
-        if not os.path.isfile(self.options.scaffolds):
-            sys.exit("Error! Scaffold File is not a file / does not exist")
+        return
 
-    def run(self):
-        """
-        Output stream is 2 separate Fasta files containing left and right flanking
-        sequences for gaps identified in the scaffolds. PacBio reads can then be aligned
-        to each Fasta file separately, selecting the best hit for each read. The alignments
-        can then be loaded into memory and reads that bridge gaps can be identified.
-
-        Fasta header output format:
-
-            Scaffold_gaps.L.fa
-            >Scaffold_1.gap.1.L
-            ATGC
-
-            Scaffold_gaps.R.fa
-            >Scaffold_1.gap.1.R
-            ATGC
-        
-        Flanking sequences of X bp are stored for each scaffold and for each gap.
-        The gap table is written in standard BED format:
-            Scaffold_1 gapStart gapEnd
-        """
+    def run(self, args):
         # Open Fasta output files
-        basename = '.'.join(self.options.scaffolds.split('.')[:-1])
+        basename = '.'.join(args.scaffolds.split('.')[:-1])
         gapsL = open(basename+'_gaps.L.fa', 'w')
         gapsR = open(basename+'_gaps.R.fa', 'w')
         # Open gap BED table output
         try:
-            gapTableOut = open(self.options.gapOutput,'w')
+            gapTableOut = open(args.gapOutput,'w')
         except IOError:
             gapTableOut = open(basename+'_gapInfo.bed', 'w')
         # Load the reference Fasta file
         try:
-            reference = Fasta(self.options.scaffolds)
+            reference = Fasta(args.scaffolds)
         except IOError:
             sys.exit("Cannot open reference Fasta, please check file integrity")
         # Implementing flank extraction procedure
@@ -74,7 +32,7 @@ class Setup():
             seq = str(scaf)
             gapCoords = []
             query = "[^Nn]([Nn]{%d,%d})[^Nn]"
-            param = (self.options.minGap, self.options.maxGap)
+            param = (args.min_gap, args.max_gap)
             for gap in re.finditer(query % param, seq):
                 gapCoords.append((gap.start(), gap.end()))
             # Continue if no gaps are found
@@ -83,7 +41,7 @@ class Setup():
             # Consolidate gaps that are too close -- indicating low quality regions.
             i = 0
             while i < len(gapCoords)-1:
-                if gapCoords[i+1][0] - gapCoords[i][1] < self.options.flankSize:
+                if gapCoords[i+1][0] - gapCoords[i][1] < args.flank_size:
                     gapCoords[i+1][0] = gapCoords[i][0]
                     del gapCoords[i]
                 else:
@@ -92,8 +50,8 @@ class Setup():
             for i, coords in enumerate(gapCoords):
                 gapStart, gapEnd = coords
                 gapTableOut.write("%s\t%i\t%i\n" % (str(scaff.name), gapStart, gapEnd))
-                flankL = seq[gapStart-self.options.flankSize:gapStart]
-                flankR = seq[gapEnd:gapEnd+self.options.flankSize]
+                flankL = seq[gapStart-args.flank_size:gapStart]
+                flankR = seq[gapEnd:gapEnd+args.flank_size]
                 gapsL.write('>'+str(scaf.name)+'.gap.'+str(i+1)+'.L\n'+flankL+'\n')
                 gapsR.write('>'+str(scaf.name)+'.gap.'+str(i+1)+'.R\n'+flankR+'\n')
         # Close shop
