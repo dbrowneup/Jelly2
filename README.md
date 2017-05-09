@@ -5,11 +5,11 @@ This project started out as a hack of PBJelly in an attempt to improve the effic
 # Dependencies
 
 * Python (v2.7)
-* (BLASR)[https://github.com/PacificBiosciences/blasr]
-* (pysam)[https://github.com/pysam-developers/pysam]
-* (Minimap)[https://github.com/lh3/minimap]
-* (Miniasm)[https://github.com/lh3/miniasm]
-* (Racon)[https://github.com/isovic/racon]
+* [BLASR](https://github.com/PacificBiosciences/blasr)
+* [pysam](https://github.com/pysam-developers/pysam)
+* [Minimap](https://github.com/lh3/minimap)
+* [Miniasm](https://github.com/lh3/miniasm)
+* [Racon](https://github.com/isovic/racon)
 
 # Design Philosophy
 
