@@ -3,6 +3,7 @@
 import os
 import subprocess
 import itertools as it
+from string import Template
 
 import pysam
 from pyfaidx import Fasta
