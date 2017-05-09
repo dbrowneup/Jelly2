@@ -56,31 +56,39 @@ def main():
         help='Number of extracted bases flanking gaps and scaffold ends, default=1000')
     # Arguments for Support
     support_args = parser.add_argument_group('Support')
-    support_args.add_argument('-d', '--min_reads', dest='min_reads', type=int, default=5, \
-        help='The minimum number of reads required to support a gap')
-    support_args.add_argument('-w', '--wiggle', dest='wiggle', type=int, default=0.5, \
-        help='The percentage of deviation allowed from predicted gap size')
+    support_args.add_argument('-b', '--blasr', dest='blasr', type=str, \
+        help='Parameters to pass to BLASR', default='')
+    support_args.add_argument('-d', '--min_reads', dest='min_reads', type=int, \
+        help='The minimum number of reads required to support a gap', default=5)
+    support_args.add_argument('-w', '--wiggle', dest='wiggle', type=int, \
+        help='The percent deviation allowed from predicted gap size', default=0.5)
     # Arguments for Assembly
     assembly_args = parser.add_argument_group('Assembly')
     assembly_args.add_argument('-t', '--threads', dest='threads', type=int, \
-    	help='Number of threads to use for Minimap', default=1)
+        help='Number of threads to use for Minimap', default=1)
     assembly_args.add_argument('-m', '--minimap', dest='minimap', \
-    	help='Parameters to pass to Minimap', default='-Sw5 -L100 -m0')
+        help='Parameters to pass to Minimap', default='-Sw5 -L100 -m0')
     assembly_args.add_argument('-a', '--miniasm', dest='miniasm', \
-    	help='Parameters to pass to Miniasm', default='')
+        help='Parameters to pass to Miniasm', default='')
     assembly_args.add_argument('-r', '--racon', dest='racon', \
-    	help='Parameters to pass to Racon', default='')
-    # Arguments for Placement
-
+        help='Parameters to pass to Racon', default='')
+#    # Arguments for Placement
+#    placement_args = parser.add_argument_group('Placement')
+    # Parse the arguments
     args = parser.parse_args()
-
-#    parser.add_argument('-g', '--gapOutput', dest='gapOutput', \
-#        help="Create the table for gapInformation", default=None)
-    basename = '.'.join(args.scaffolds.split('.')[:-1])
-
+    # Run Setup
     setup = Setup()
+    setup.run(args)
+    # Run Support
     support = Support()
+    support.mapping(args)
+    support.find_support(args)
+    # Run Assembly
     assembly = Assembly()
+    assembly.assemble_gaps(args)
+    # Run Placement
+    placement = Placement(args)
+    placement.fill_gaps()
 
 
 

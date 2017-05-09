@@ -3,9 +3,10 @@
 from pyfaidx import Fasta
 
 class Placement():
-    def __init__(self, scaffolds, gap_table):
-        self.gap = self.load_gaps(gap_table)
-        self.ref = Fasta(scaffolds)
+    def __init__(self, args):
+        self.basename = '.'.join(args.scaffolds.split('.')[:-1])
+        self.gap = self.load_gaps(self.basename+'_gapInfo.bed')
+        self.ref = Fasta(args.scaffolds)
 
     def load_gaps(self, gap_table):
         # Open gap table and read file into list
@@ -26,12 +27,12 @@ class Placement():
                     continue
         return gap_D
 
-    def fill_gaps(self, output):
-        with open(output, 'w') as out:
+    def fill_gaps(self):
+        with open(self.basename+'_GapFilled.fa', 'w') as out:
             for scaf in self.ref:
                 # Try to load gaps, but if scaffold has no gaps, write to output and continue
                 try:
-                    gaps = gap_D[str(scaf.name)]
+                    gaps = self.gap[str(scaf.name)]
                 except KeyError:
                     out.write('>'+str(scaf.name)+'\n'+str(scaf)+'\n')
                     continue

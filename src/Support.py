@@ -1,7 +1,6 @@
 #!/usr/bin/env python
 
 import os
-import argparse
 import subprocess
 import itertools as it
 
@@ -12,18 +11,16 @@ class Support():
     def __init__(self):
         return
 
-    def mapping(self, reads, scaffoldName, blasr_params):
+    def mapping(self, args):
         # Run the BLASR mapping jobs
-        basename = '.'.join(scaffoldName.split('.')[:-1])
-        gapsL = {"map": {"reads": reads, "flanks": basename+'_gaps.L.fa', "param": blasr_params}, "out": basename+"_gaps.L.bam"}
-        gapsR = {"map": {"reads": reads, "flanks": basename+'_gaps.R.fa', "param": blasr_params}, "out": basename+"_gaps.R.bam"}
-        mappingTemplate = Template("blasr ${reads} ${flanks} --bam --hitPolicy allbest ${param}")
+        basename = '.'.join(args.scaffolds.split('.')[:-1])
+        gapsL = {"reads": args.subreads, "flanks": basename+'_gaps.L.fa', "param": args.blasr, "out": basename+"_gaps.L.bam"}
+        gapsR = {"reads": args.subreads, "flanks": basename+'_gaps.R.fa', "param": args.blasr, "out": basename+"_gaps.R.bam"}
+        mappingTemplate = Template("blasr ${reads} ${flanks} --bam --out ${out} --hitPolicy allbest ${param}")
         mappingJobs = [gapsL, gapsR]
         for job in mappingJobs:
-            with open(job["out"]) as output:
-                p1 = subprocess.Popen(mappingTemplate.substitute(job["map"]).split(' '), stdout=subprocess.PIPE)
-                p2 = subprocess.Popen('samtools view -F4 -b'.split(' '), stdin=p1.stdout, stdout=output)
-                p2.communicate()
+            p1 = subprocess.Popen(mappingTemplate.substitute(job).split(' '), stdout=output)
+            p1.communicate()
         # Index the BAM alignment files
         gapsL = {"aligns": basename+"_gaps.L.bam"}
         gapsR = {"aligns": basename+"_gaps.R.bam"}
@@ -34,7 +31,7 @@ class Support():
     
     def find_support(self, args):
         # Load BAM alignments, gap BED table, reference Fasta file
-        basename = '.'.join(self.scaffolds.split('.')[:-1])
+        basename = '.'.join(args.scaffolds.split('.')[:-1])
         gapsL = pysam.AlignmentFile(basename+'_gaps.L.bam', 'rb')
         gapsR = pysam.AlignmentFile(basename+'_gaps.R.bam', 'rb')
         gap_list = open(args.gap_info, 'r').read().split('\n')[:-1]

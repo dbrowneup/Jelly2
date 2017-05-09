@@ -3,7 +3,6 @@
 import os
 import re
 import sys
-import argparse
 
 from pyfaidx import Fasta
 
@@ -12,15 +11,11 @@ class Setup():
         return
 
     def run(self, args):
-        # Open Fasta output files
+        # Open Fastaq and BED output files
         basename = '.'.join(args.scaffolds.split('.')[:-1])
         gapsL = open(basename+'_gaps.L.fa', 'w')
         gapsR = open(basename+'_gaps.R.fa', 'w')
-        # Open gap BED table output
-        try:
-            gapTableOut = open(args.gapOutput,'w')
-        except IOError:
-            gapTableOut = open(basename+'_gapInfo.bed', 'w')
+        gapTableOut = open(basename+'_gapInfo.bed', 'w')
         # Load the reference Fasta file
         try:
             reference = Fasta(args.scaffolds)
@@ -38,7 +33,7 @@ class Setup():
             # Continue if no gaps are found
             if len(gapCoords) == 0:
                 continue
-            # Consolidate gaps that are too close -- indicating low quality regions.
+            # Consolidate gaps that are too close (indicates low quality regions)
             i = 0
             while i < len(gapCoords)-1:
                 if gapCoords[i+1][0] - gapCoords[i][1] < args.flank_size:
@@ -58,7 +53,3 @@ class Setup():
         gapsL.close()
         gapsR.close()
         gapTableOut.close()
-
-if __name__ == '__main__':
-    setup = Setup()
-    setup.run()
