@@ -39,65 +39,101 @@ sequences and edges between scaffold ends
 This Class will hold the methods for parsing information from the BAM alignments,
 the BED table of gap coordinates, and the reference Fasta file
 """
-class ReadParser():
-    def __init__(self, basename):
+class Support():
+    def __init__(self):
+        return
+
+    def read_parser(self, basename):
 #    	self.endsL = pysam.AlignmentFile(basename+'_ends.L.bam', 'rb')
 #    	self.endsR = pysam.AlignmentFile(basename+'_ends.R.bam', 'rb')
     	self.gapsL = pysam.AlignmentFile(basename+'_gaps.L.bam', 'rb')
     	self.gapsR = pysam.AlignmentFile(basename+'_gaps.R.bam', 'rb')
 
-
-def main():
-	# Parse arguments for program
-    parser = argparse.ArgumentParser(description='Determine PacBio read support for gaps in scaffolds', usage=usage())
-    parser.add_argument('scaffolds', action='store', help='The input scaffolds in Fasta format')
-    parser.add_argument('gap_info', action='store', help='The input gap info in BED format')
-    parser.add_argument('-m', '--min_reads', dest='min_reads', type=int, default=5, \
-    	help='The minimum number of reads required to support a gap')
-    parser.add_argument('-w', '--wiggle', dest='wiggle', type=int, default=0.5, \
-    	help='The percentage of deviation allowed from predicted gap size')
-    args = parser.parse_args()
-    # Load BAM alignments, gap BED table, reference Fasta file
-    basename = '.'.join(self.options.scaffolds.split('.')[:-1])
-    reads = ReadParser(basename)
-    gaps_L = open(args.gap_info, 'r').read().split('\n')[:-1]
-    gaps_L = [x.split('\t') for x in gaps_L]
-    gaps_D = {x[0]: [(x[1], x[2])] if x[0] not in gaps_D else gaps_D[x[0]].append((x[1], x[2])) for x in gaps_L}
-    ref = Fasta(args.scaffolds)
-    # Iterate through scaffolds and determine support
-    os.mkdir('Gap_Support')
-    for scaf in ref:
-    	# Continue if there are no gaps in scaffold
-    	try:
-            gaps = gaps_D[str(scaf.name)]
-        except KeyError:
-            continue
-        # Iterate through gaps and check support
-        for i, gap in enumerate(gaps):
-        	gap_size = gap[1] - gap[0]
-            readsL = [L for L in reads.endsL.fetch(str(scaf.name)+'.gap.'+str(i)+'.L')])
-            readsR = [R for R in reads.endsR.fetch(str(scaf.name)+'.gap.'+str(i)+'.R')])
-            # Determine the number of supporting reads, store alignments in tuple
-            support = [(L, R) if L.query_name == R.query_name for L, R in it.product(readsL, readsR)]
-            if len(support) < args.min_reads:
-            	continue
-            # Iterate through supporting reads and measure wiggle
-            fastq = list()
-            for L, R in support:
-            	read_span = R.query_alignment_start - L.query_alignment_end
-            	if (gap_size - gap_size * args.wiggle) < read_span < (gap_size + gap_size * args.wiggle):
-            		sequence = L.query_sequence[L.query_alignment_end:R.query_alignment_start]
-            		quality = L.query_qualities[L.query_alignment_end:R.query_alignment_start]
-            		fastq.append('@'+str(L.query_name)+'\n'+str(sequence)+'\n+\n'+str(quality)+'\n')
-            # Continue if too many reads fail wiggle-check
-            if len(fastq) < args.min_reads:
+    def mapping(self, reads, scaffoldName, blasr_params):
+        """
+        Please deploy BLASR v5.3+ with Pitchfork
+        You will also need SAMtools
+        Input:
+            - PacBio reads (must be in PacBio BAM format)
+            - Flank files from Setup
+        Task:
+            - Map PacBio reads to flanks
+        Output:
+            - Indexed BAM files of alignments
+        """
+    
+        # Run the BLASR mapping jobs
+        basename = '.'.join(scaffoldName.split('.')[:-1])
+        endsL = {"map": {"reads": reads, "flanks": basename+'_ends.L.fa', "param": blasr_params}, "out": basename+"_ends.L.bam"}
+        endsR = {"map": {"reads": reads, "flanks": basename+'_ends.R.fa', "param": blasr_params}, "out": basename+"_ends.R.bam"}
+        gapsL = {"map": {"reads": reads, "flanks": basename+'_gaps.L.fa', "param": blasr_params}, "out": basename+"_gaps.L.bam"}
+        gapsL = {"map": {"reads": reads, "flanks": basename+'_gaps.R.fa', "param": blasr_params}, "out": basename+"_gaps.R.bam"}
+        mappingTemplate = Template("blasr ${reads} ${flanks} --bam --hitPolicy allbest ${param}")
+        mappingJobs = [endsL, endsR, gapsL, gapsR]
+        for job in mappingJobs:
+            with open(job["out"]) as output:
+                p1 = subprocess.Popen(mappingTemplate.substitute(job["map"]).split(' '), stdout=subprocess.PIPE)
+                p2 = subprocess.Popen('samtools view -F4 -b'.split(' '), stdin=p1.stdout, stdout=output)
+                p2.communicate()
+        # Index the BAM alignment files
+        endsL = {"aligns": basename+"_ends.L.bam"}
+        endsR = {"aligns": basename+"_ends.R.bam"}
+        gapsL = {"aligns": basename+"_gaps.L.bam"}
+        gapsR = {"aligns": basename+"_gaps.R.bam"}
+        indexingTemplate = Template("samtools index ${aligns}")
+        indexingJobs = [endsL, endsR, gapsL, gapsR]
+        for job in indexingJobs:
+            subprocess.call(indexingTemplate.substitute(job).split(' '))
+    
+    def main(self):
+    	# Parse arguments for program
+        parser = argparse.ArgumentParser(description='Determine PacBio read support for gaps in scaffolds', usage=usage())
+        parser.add_argument('scaffolds', action='store', help='The input scaffolds in Fasta format')
+        parser.add_argument('gap_info', action='store', help='The input gap info in BED format')
+        parser.add_argument('-m', '--min_reads', dest='min_reads', type=int, default=5, \
+        	help='The minimum number of reads required to support a gap')
+        parser.add_argument('-w', '--wiggle', dest='wiggle', type=int, default=0.5, \
+        	help='The percentage of deviation allowed from predicted gap size')
+        args = parser.parse_args()
+        # Load BAM alignments, gap BED table, reference Fasta file
+        basename = '.'.join(self.options.scaffolds.split('.')[:-1])
+        reads = read_parser(basename)
+        gaps_L = open(args.gap_info, 'r').read().split('\n')[:-1]
+        gaps_L = [x.split('\t') for x in gaps_L]
+        gaps_D = {x[0]: [(x[1], x[2])] if x[0] not in gaps_D else gaps_D[x[0]].append((x[1], x[2])) for x in gaps_L}
+        ref = Fasta(args.scaffolds)
+        # Iterate through scaffolds and determine support
+        os.mkdir('Gap_Support')
+        for scaf in ref:
+        	# Continue if there are no gaps in scaffold
+        	try:
+                gaps = gaps_D[str(scaf.name)]
+            except KeyError:
                 continue
-            # Create sub-directory and write FastQ output
-            path = 'Gap_Support/'+str(scaf.name)+'.gap.'+str(i+1)
-            os.mkdir(path)
-            with open(path+'/reads.fq', 'a') as output:
-                for line in fastq:
-                	output.write(line)
+            # Iterate through gaps and check support
+            for i, gap in enumerate(gaps):
+            	gap_size = gap[1] - gap[0]
+                readsL = [L for L in reads.endsL.fetch(str(scaf.name)+'.gap.'+str(i)+'.L')])
+                readsR = [R for R in reads.endsR.fetch(str(scaf.name)+'.gap.'+str(i)+'.R')])
+                # Determine the number of supporting reads, store alignments in tuple
+                support = [(L, R) if L.query_name == R.query_name for L, R in it.product(readsL, readsR)]
+                if len(support) < args.min_reads:
+                	continue
+                # Iterate through supporting reads and measure wiggle
+                fastq = list()
+                for L, R in support:
+                	read_span = R.query_alignment_start - L.query_alignment_end
+                	if (gap_size - gap_size * args.wiggle) < read_span < (gap_size + gap_size * args.wiggle):
+                		sequence = L.query_sequence[L.query_alignment_end:R.query_alignment_start]
+                		quality = L.query_qualities[L.query_alignment_end:R.query_alignment_start]
+                		fastq.append('@'+str(L.query_name)+'\n'+str(sequence)+'\n+\n'+str(quality)+'\n')
+                # Continue if too many reads fail wiggle-check
+                if len(fastq) < args.min_reads:
+                    continue
+                # Create sub-directory and write FastQ output
+                path = 'Gap_Support/'+str(scaf.name)+'.gap.'+str(i+1)
+                os.mkdir(path)
+                with open(path+'/reads.fq', 'a') as output:
+                    for line in fastq:
+                    	output.write(line)
 
-if __name__ == '__main__':
-	main()
