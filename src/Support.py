@@ -13,27 +13,24 @@ class Support():
         return
 
     def mapping(self, args):
-        # Run the BLASR mapping jobs
         basename = '.'.join(args.scaffolds.split('.')[:-1])
-        gapsL = {"reads": args.subreads, "flanks": basename+'_gaps.L.fa', "threads": args.threads, "param": args.blasr, "out": "aligned_gaps.L.bam"}
-        gapsR = {"reads": args.subreads, "flanks": basename+'_gaps.R.fa', "threads": args.threads, "param": args.blasr, "out": "aligned_gaps.R.bam"}
+        # Run the BLASR mapping jobs
+        mapL = {"reads": args.subreads, "flanks": basename+'_gaps.L.fa', "threads": args.threads, "param": args.blasr, "out": "aligned_gaps.L.bam"}
+        mapR = {"reads": args.subreads, "flanks": basename+'_gaps.R.fa', "threads": args.threads, "param": args.blasr, "out": "aligned_gaps.R.bam"}
         mappingTemplate = Template("blasr ${reads} ${flanks} --nproc ${threads} --bam --out ${out} --hitPolicy allbest ${param}")
-        mappingJobs = [gapsL, gapsR]
-        for job in mappingJobs:
+        for job in [mapL, mapR]:
             subprocess.call(mappingTemplate.substitute(job).split(' '))
         # Sort the BAM alignment files
-        gapsL = {"threads": args.threads, "output": "sorted_gaps.L", "input": "aligned_gaps.L.bam"}
-        gapsR = {"threads": args.threads, "output": "sorted_gaps.R", "input": "aligned_gaps.R.bam"}
+        sortL = {"threads": args.threads, "output": "sorted_gaps.L", "input": "aligned_gaps.L.bam"}
+        sortR = {"threads": args.threads, "output": "sorted_gaps.R", "input": "aligned_gaps.R.bam"}
         sortingTemplate = Template("samtools sort -@ ${threads} -o ${output} ${input}")
-        sortingJobs = [gapsL, gapsR]
-        for job in sortingJobs:
+        for job in [sortL, sortR]:
             subprocess.call(sortingTemplate.substitute(job).split(' '))
         # Index the BAM alignment files
-        gapsL = {"aligns": "sorted_gaps.L.bam"}
-        gapsR = {"aligns": "sorted_gaps.R.bam"}
+        indexL = {"aligns": "sorted_gaps.L.bam"}
+        indexR = {"aligns": "sorted_gaps.R.bam"}
         indexingTemplate = Template("samtools index ${aligns}")
-        indexingJobs = [gapsL, gapsR]
-        for job in indexingJobs:
+        for job in [indexL, indexR]:
             subprocess.call(indexingTemplate.substitute(job).split(' '))
     
     def find_support(self, args):
