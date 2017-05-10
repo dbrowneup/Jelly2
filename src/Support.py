@@ -22,8 +22,8 @@ class Support():
         for job in mappingJobs:
             subprocess.call(mappingTemplate.substitute(job).split(' '))
         # Sort the BAM alignment files
-        gapsL = {"threads": args.threads, "output": "sorted_gaps.L.bam", "input": "aligned_gaps.L.bam"}
-        gapsR = {"threads": args.threads, "output": "sorted_gaps.R.bam", "input": "aligned_gaps.R.bam"}
+        gapsL = {"threads": args.threads, "output": "sorted_gaps.L", "input": "aligned_gaps.L.bam"}
+        gapsR = {"threads": args.threads, "output": "sorted_gaps.R", "input": "aligned_gaps.R.bam"}
         sortingTemplate = Template("samtools sort -@ ${threads} -o ${output} ${input}")
         sortingJobs = [gapsL, gapsR]
         for job in sortingJobs:
