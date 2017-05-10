@@ -43,9 +43,11 @@ def usage():
 
 def main():
     parser = argparse.ArgumentParser(description='Determine PacBio read support for gaps in scaffolds', usage=usage())
-    # Main positional arguments
+    # Main arguments
     parser.add_argument('scaffolds', action='store', help='The input scaffolds in Fasta format')
     parser.add_argument('subreads', action='store', help='The PacBio subreads in BAM format')
+    assembly_args.add_argument('-t', '--threads', dest='threads', type=int, \
+        help='Number of threads to use for multi-threaded processes, default=1', default=1)
     # Arguments for Setup
     setup_args = parser.add_argument_group('Setup')
     setup_args.add_argument('-n', '--min_gap', dest='min_gap', type=int, default=200, \
@@ -64,8 +66,6 @@ def main():
         help='The percent deviation allowed from predicted gap size', default=0.5)
     # Arguments for Assembly
     assembly_args = parser.add_argument_group('Assembly')
-    assembly_args.add_argument('-t', '--threads', dest='threads', type=int, \
-        help='Number of threads to use for Minimap', default=1)
     assembly_args.add_argument('-m', '--minimap', dest='minimap', \
         help='Parameters to pass to Minimap', default='-Sw5 -L100 -m0')
     assembly_args.add_argument('-a', '--miniasm', dest='miniasm', \

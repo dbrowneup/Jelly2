@@ -15,16 +15,22 @@ class Support():
     def mapping(self, args):
         # Run the BLASR mapping jobs
         basename = '.'.join(args.scaffolds.split('.')[:-1])
-        gapsL = {"reads": args.subreads, "flanks": basename+'_gaps.L.fa', "param": args.blasr, "out": basename+"_gaps.L.bam"}
-        gapsR = {"reads": args.subreads, "flanks": basename+'_gaps.R.fa', "param": args.blasr, "out": basename+"_gaps.R.bam"}
-        mappingTemplate = Template("blasr ${reads} ${flanks} --bam --out ${out} --hitPolicy allbest ${param}")
+        gapsL = {"reads": args.subreads, "flanks": basename+'_gaps.L.fa', "threads": args.threads, "param": args.blasr, "out": "aligned_gaps.L.bam"}
+        gapsR = {"reads": args.subreads, "flanks": basename+'_gaps.R.fa', "threads": args.threads, "param": args.blasr, "out": "aligned_gaps.R.bam"}
+        mappingTemplate = Template("blasr ${reads} ${flanks} --nproc ${threads} --bam --out ${out} --hitPolicy allbest ${param}")
         mappingJobs = [gapsL, gapsR]
         for job in mappingJobs:
-            p1 = subprocess.Popen(mappingTemplate.substitute(job).split(' '))
-            p1.communicate()
+            subprocess.call(mappingTemplate.substitute(job).split(' '))
+        # Sort the BAM alignment files
+        gapsL = {"threads": args.threads, "output": "sorted_gaps.L.bam", "input": "aligned_gaps.L.bam"}
+        gapsR = {"threads": args.threads, "output": "sorted_gaps.R.bam", "input": "aligned_gaps.R.bam"}
+        sortingTemplate = Template("samtools sort -@ ${threads} -o ${output} ${input}")
+        sortingJobs = [gapsL, gapsR]
+        for job in sortingJobs:
+            subprocess.call(sortingTemplate.substitute(job).split(' '))
         # Index the BAM alignment files
-        gapsL = {"aligns": basename+"_gaps.L.bam"}
-        gapsR = {"aligns": basename+"_gaps.R.bam"}
+        gapsL = {"aligns": "sorted_gaps.L.bam"}
+        gapsR = {"aligns": "sorted_gaps.R.bam"}
         indexingTemplate = Template("samtools index ${aligns}")
         indexingJobs = [gapsL, gapsR]
         for job in indexingJobs:
@@ -33,8 +39,8 @@ class Support():
     def find_support(self, args):
         # Load BAM alignments, gap BED table, reference Fasta file
         basename = '.'.join(args.scaffolds.split('.')[:-1])
-        gapsL = pysam.AlignmentFile(basename+'_gaps.L.bam', 'rb')
-        gapsR = pysam.AlignmentFile(basename+'_gaps.R.bam', 'rb')
+        gapsL = pysam.AlignmentFile('sorted_gaps.L.bam', 'rb')
+        gapsR = pysam.AlignmentFile('sorted_gaps.R.bam', 'rb')
         gap_list = open(args.gap_info, 'r').read().split('\n')[:-1]
         gap_list = [x.split('\t') for x in gap_list]
         gap_dict = {x[0]: [(x[1], x[2])] if x[0] not in gap_dict else gap_dict[x[0]].append((x[1], x[2])) for x in gap_list}
