@@ -46,7 +46,7 @@ def main():
     # Main arguments
     parser.add_argument('scaffolds', action='store', help='The input scaffolds in Fasta format')
     parser.add_argument('subreads', action='store', help='The PacBio subreads in BAM format')
-    assembly_args.add_argument('-t', '--threads', dest='threads', type=int, \
+    parser.add_argument('-t', '--threads', dest='threads', type=int, \
         help='Number of threads to use for multi-threaded processes, default=1', default=1)
     # Arguments for Setup
     setup_args = parser.add_argument_group('Setup')
