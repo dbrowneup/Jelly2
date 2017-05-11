@@ -41,7 +41,7 @@ class Support():
         gapsR = pysam.AlignmentFile('sorted_gaps.R.bam', 'rb')
         gap_list = open(basename+'_gapInfo.bed', 'r').read().split('\n')[:-1]
         gap_list = [x.split('\t') for x in gap_list]
-        gap_dict = {x[0]: [] if x[0] not in gap_dict for x in gap_list}
+        gap_dict = {x[0]: [] for x in gap_list if x[0] not in gap_dict}
         for x in gap_list:
             gap_dict[x[0]].append((x[1], x[2]))
         ref = Fasta(args.scaffolds)
