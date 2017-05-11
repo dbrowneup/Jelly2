@@ -23,15 +23,8 @@ class Support():
     
     def sorting(self, args):
         # Sort the BAM alignment files
-#        sortL = {"threads": args.threads, "output": "sorted_gaps.L", "input": "aligned_gaps.L.bam"}
-#        sortR = {"threads": args.threads, "output": "sorted_gaps.R", "input": "aligned_gaps.R.bam"}
-#        sortL = ['samtools', 'sort', '-O', 'BAM', '-o', 'sorted_gaps.L', '-@', str(args.threads), 'aligned_gaps.L.bam']
-#        sortR = ['samtools', 'sort', '-O', 'BAM', '-o', 'sorted_gaps.R', '-@', str(args.threads), 'aligned_gaps.R.bam']
-#        sortingTemplate = Template("samtools sort -T ${output} -@ ${threads} ${input}")
-#        for job in [sortL, sortR]:
-#            subprocess.call(job)
-        pysam.sort("-@", str(args.threads), "-o", "sorted_gaps.L", "aligned_gaps.L.bam")
-        pysam.sort("-@", str(args.threads), "-o", "sorted_gaps.R", "aligned_gaps.R.bam")
+        pysam.sort("-@", str(args.threads), "-o", "sorted_gaps.L.bam", "aligned_gaps.L.bam")
+        pysam.sort("-@", str(args.threads), "-o", "sorted_gaps.R.bam", "aligned_gaps.R.bam")
     
     def indexing(self, args):
         # Index the BAM alignment files
