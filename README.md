@@ -1,5 +1,7 @@
 # Jelly2
 
+Note: this code is not yet fully functional! There are bugs that I am still working out. I will remove this statement and tag a release when the code is entirely debugged. That said, the code is essentially complete, with full implementation of the basic pipeline.
+
 This project started out as a hack of [PBJelly](https://github.com/dbrowneup/PBSuite) in an attempt to improve the efficiency of the code. I ended up rebuilding the core pipeline, focusing it down into four stages: Setup, Support, Assembly, and Placement. The code is designed for compatibility with the most recently developed standards, requiring PacBio subreads in the BAM format. It makes use of the cutting edge algorithms Minimap, Miniasm, and Racon, for ultra-fast assembly of gap sequences. The stages are managed by a single driver script, `Jelly2.py`, so this program is easy to use. To see the full range of options, run `python Jelly2.py --help`, but the basic usage is:
 
 ```
