@@ -15,7 +15,8 @@ class Placement():
         gap_L = open(gap_table).read().split('\n')[:-1]
         gap_L = [x.split('\t') for x in gap_L]
         # Parse table into dictionary where scaffold names are keys
-        gap_D = {x[0]: [[x[1], x[2]]] if x[0] not in gap_D else gap_D[x[0]].append([x[1], x[2]]) for x in gap_L}
+        gap_D = dict()
+        gap_D = {x[0]: [[int(x[1]), int(x[2])]] if x[0] not in gap_D else gap_D[x[0]].append([int(x[1]), int(x[2])]) for x in gap_L}
         # Load assembled gap sequences
         for scaf, gaps in gap_D.iteritems():
             for i, g in enumerate(gaps):
