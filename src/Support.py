@@ -39,7 +39,7 @@ class Support():
         basename = '.'.join(args.scaffolds.split('.')[:-1])
         gapsL = pysam.AlignmentFile('sorted_gaps.L.bam', 'rb')
         gapsR = pysam.AlignmentFile('sorted_gaps.R.bam', 'rb')
-        gap_list = open(args.gap_info, 'r').read().split('\n')[:-1]
+        gap_list = open(basename+'_gapInfo.bed', 'r').read().split('\n')[:-1]
         gap_list = [x.split('\t') for x in gap_list]
         gap_dict = {x[0]: [(x[1], x[2])] if x[0] not in gap_dict else gap_dict[x[0]].append((x[1], x[2])) for x in gap_list}
         ref = Fasta(args.scaffolds)
@@ -60,7 +60,7 @@ class Support():
                 # Determine the number of supporting reads, store alignments in tuple
                 support = [(L, R) for L, R in it.product(readsL, readsR) if L.query_name == R.query_name]
                 if len(support) < args.min_reads:
-                	continue
+                    continue
                 # Iterate through supporting reads and measure wiggle
                 fastq = list()
                 for L, R in support:
