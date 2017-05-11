@@ -23,11 +23,13 @@ class Support():
     
     def sorting(self, args):
         # Sort the BAM alignment files
-        sortL = {"threads": args.threads, "output": "sorted_gaps.L", "input": "aligned_gaps.L.bam"}
-        sortR = {"threads": args.threads, "output": "sorted_gaps.R", "input": "aligned_gaps.R.bam"}
-        sortingTemplate = Template("samtools sort -T ${output} -@ ${threads} ${input}")
+#        sortL = {"threads": args.threads, "output": "sorted_gaps.L", "input": "aligned_gaps.L.bam"}
+#        sortR = {"threads": args.threads, "output": "sorted_gaps.R", "input": "aligned_gaps.R.bam"}
+        sortL = ['samtools', 'sort', '-o', 'sorted_gaps.L', '-@', str(args.threads), 'aligned_gaps.L.bam']
+        sortR = ['samtools', 'sort', '-o', 'sorted_gaps.R', '-@', str(args.threads), 'aligned_gaps.R.bam']
+#        sortingTemplate = Template("samtools sort -T ${output} -@ ${threads} ${input}")
         for job in [sortL, sortR]:
-            subprocess.call(sortingTemplate.substitute(job).split(' '))
+            subprocess.call(job)
     
     def indexing(self, args):
         # Index the BAM alignment files

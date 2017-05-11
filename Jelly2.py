@@ -84,34 +84,34 @@ def main():
         save = open('jelly2.save', 'r').read()
         print "Found save point:", save
     except IOError:
-        save('setup')
+        write_save('setup')
     # Run Setup
     if check_save('setup'):
         setup.run(args)
-        save('mapping')
+        write_save('mapping')
     # Run Support
     if check_save('mapping'):
         support.mapping(args)
-        save('sorting')
+        write_save('sorting')
     if check_save('sorting'):
         support.sorting(args)
-        save('indexing')
+        write_save('indexing')
     if check_save('indexing'):
         support.indexing(args)
-        save('support')
+        write_save('support')
     if check_save('support'):
         support.find_support(args)
-        save('assembly')
+        write_save('assembly')
     # Run Assembly
     if check_save('assembly'):
         assembly.assemble_gaps(args)
-        save('placement')
+        write_save('placement')
     # Run Placement
     if check_save('placement'):
         placement.load_data(args)
         placement.fill_gaps()
 
-def save(stage):
+def write_save(stage):
     with open('jelly2.save', 'w') as save:
         save.write(stage)
 
