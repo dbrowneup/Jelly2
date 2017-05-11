@@ -11,7 +11,7 @@ from pyfaidx import Fasta
 class Support():
     def __init__(self):
         return
-
+    
     def mapping(self, args):
         basename = '.'.join(args.scaffolds.split('.')[:-1])
         # Run the BLASR mapping jobs
@@ -20,12 +20,16 @@ class Support():
         mappingTemplate = Template("blasr ${reads} ${flanks} --nproc ${threads} --bam --out ${out} --hitPolicy allbest ${param}")
         for job in [mapL, mapR]:
             subprocess.call(mappingTemplate.substitute(job).split(' '))
+    
+    def sorting(self, args):
         # Sort the BAM alignment files
         sortL = {"threads": args.threads, "output": "sorted_gaps.L", "input": "aligned_gaps.L.bam"}
         sortR = {"threads": args.threads, "output": "sorted_gaps.R", "input": "aligned_gaps.R.bam"}
-        sortingTemplate = Template("samtools sort -@ ${threads} -o ${output} ${input}")
+        sortingTemplate = Template("samtools sort -T ${output} -@ ${threads} ${input}")
         for job in [sortL, sortR]:
             subprocess.call(sortingTemplate.substitute(job).split(' '))
+    
+    def indexing(self, args):
         # Index the BAM alignment files
         indexL = {"aligns": "sorted_gaps.L.bam"}
         indexR = {"aligns": "sorted_gaps.R.bam"}
@@ -73,12 +77,12 @@ class Support():
                     continue
                 # Create sub-directory and write FastQ output
                 gap_name = str(scaf.name)+'.gap.'+str(i+1)
-                supported_gaps.append((gap_name, len(fastq)))
+                supported_gaps.append((gap_name, str(len(fastq))))
                 path = 'Gap_Support/'+gap_name
                 os.mkdir(path)
                 with open(path+'/reads.fq', 'a') as output:
                     for read in fastq:
                         output.write(read)
         with open('Supported_Gaps.txt', 'w') as output:
-            for scaffold, support in supported_gaps:
-                output.write(gap_name+'\t'+str(len(fastq))+'\n')
+            for gap_name, support in supported_gaps:
+                output.write(gap_name+'\t'+support+'\n')

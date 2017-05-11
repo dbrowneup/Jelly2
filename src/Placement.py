@@ -3,13 +3,15 @@
 from pyfaidx import Fasta
 
 class Placement():
-    def __init__(self, args):
-        self.basename = '.'.join(args.scaffolds.split('.')[:-1])
-        self.gap = self.load_gaps(self.basename+'_gapInfo.bed')
-        self.ref = Fasta(args.scaffolds)
+    def __init__(self):
+        return        
 
-    def load_gaps(self, gap_table):
+    def load_data(self, args):
+        # Load scaffolds into Fasta object
+        self.ref = Fasta(args.scaffolds)
         # Open gap table and read file into list
+        self.basename = '.'.join(args.scaffolds.split('.')[:-1])
+        gap_table = self.basename+'_gapInfo.bed'
         gap_L = open(gap_table).read().split('\n')[:-1]
         gap_L = [x.split('\t') for x in gap_L]
         # Parse table into dictionary where scaffold names are keys
@@ -25,7 +27,7 @@ class Placement():
                         continue
                 except IOError:
                     continue
-        return gap_D
+        self.gap = gap_D
 
     def fill_gaps(self):
         with open(self.basename+'_GapFilled.fa', 'w') as out:

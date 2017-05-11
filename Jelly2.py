@@ -72,23 +72,54 @@ def main():
         help='Parameters to pass to Miniasm', default='')
     assembly_args.add_argument('-r', '--racon', dest='racon', \
         help='Parameters to pass to Racon', default='')
-#    # Arguments for Placement
-#    placement_args = parser.add_argument_group('Placement')
     # Parse the arguments
     args = parser.parse_args()
-    # Run Setup
+    # Initialize classes
     setup = Setup()
-    setup.run(args)
-    # Run Support
     support = Support()
-    support.mapping(args)
-    support.find_support(args)
-    # Run Assembly
     assembly = Assembly()
-    assembly.assemble_gaps(args)
+    placement = Placement()
+    # Check for save point
+    try:
+        save = open('jelly2.save', 'r').read()
+        print "Found save point:", save
+    except IOError:
+        save('setup')
+    # Run Setup
+    if check_save('setup'):
+        setup.run(args)
+        save('mapping')
+    # Run Support
+    if check_save('mapping'):
+        support.mapping(args)
+        save('sorting')
+    if check_save('sorting'):
+        support.sorting(args)
+        save('indexing')
+    if check_save('indexing'):
+        support.indexing(args)
+        save('support')
+    if check_save('support'):
+        support.find_support(args)
+        save('assembly')
+    # Run Assembly
+    if check_save('assembly'):
+        assembly.assemble_gaps(args)
+        save('placement')
     # Run Placement
-    placement = Placement(args)
-    placement.fill_gaps()
+    if check_save('placement'):
+        placement.load_data(args)
+        placement.fill_gaps()
+
+def save(stage):
+    with open('jelly2.save', 'w') as save:
+        save.write(stage)
+
+def check_save(stage):
+    if open('jelly2.save', 'r').read() == stage:
+        return True
+    else:
+        return False
 
 if __name__ == '__main__':
     main()
