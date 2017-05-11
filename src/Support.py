@@ -42,7 +42,7 @@ class Support():
         gap_list = open(basename+'_gapInfo.bed', 'r').read().split('\n')[:-1]
         gap_list = [x.split('\t') for x in gap_list]
         gap_dict = dict()
-        gap_dict = {x[0]: [(int(x[1]), int(x[2]))] if x[0] not in gap_dict else gap_dict[x[0]].append((int(x[1]), int(x[2]))) for x in gap_list}
+        gap_dict = {gap_dict[x[0]].append((int(x[1]), int(x[2]))) if x[0] in gap_dict else x[0]: [(int(x[1]), int(x[2]))] for x in gap_list}
         ref = Fasta(args.scaffolds)
         # Iterate through scaffolds and determine support
         os.mkdir('Gap_Support')
@@ -60,7 +60,6 @@ class Support():
                 gap_size = gap[1] - gap[0]
                 readsL = [L for L in gapsL.fetch(str(scaf.name)+'.gap.'+str(i+1)+'.L')]
                 readsR = [R for R in gapsR.fetch(str(scaf.name)+'.gap.'+str(i+1)+'.R')]
-
                 # Determine the number of supporting reads, store alignments in tuple
                 support = [(L, R) for L, R in it.product(readsL, readsR) if L.query_name == R.query_name]
                 print "Scaffold:", str(scaf.name), "Gap:", str(i+1), "Size:", str(gap_size), "Support:", len(support)
