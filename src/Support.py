@@ -60,6 +60,7 @@ class Support():
                 readsR = [R for R in gapsR.fetch(str(scaf.name)+'.gap.'+str(i+1)+'.R')]
                 # Determine the number of supporting reads, store alignments in tuple
                 support = [(L, R) for L, R in it.product(readsL, readsR) if L.query_name == R.query_name]
+                print "Scaffold:", str(scaf.name), "Gap:", str(i), "Support:", len(support)
                 if len(support) < args.min_reads:
                     continue
                 # Iterate through supporting reads and measure wiggle
