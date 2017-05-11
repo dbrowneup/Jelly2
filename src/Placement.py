@@ -44,7 +44,7 @@ class Placement():
                 scaffold = list()
                 for i, g in enumerate(gaps):
                     # Load scaffold sequence preceding gap
-                    scaffold.append(scaf[last_index:g[0]])
+                    scaffold.append(str(scaf[last_index:g[0]]))
                     # Load fill sequence if gap was assembled, else fill with N
                     try:
                         scaffold.append(g[2])
@@ -54,6 +54,6 @@ class Placement():
                     last_index = g[1]
                 else:
                     # Load final stretch of scaffold sequence past last gap
-                    scaffold.append(scaf[last_index:])
+                    scaffold.append(str(scaf[last_index:]))
                 # Write scaffold to output
                 out.write('>'+str(scaf.name)+'\n'+''.join(scaffold)+'\n')

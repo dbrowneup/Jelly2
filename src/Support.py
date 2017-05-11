@@ -51,22 +51,26 @@ class Support():
             # Continue if there are no gaps in scaffold
             try:
                 gaps = gap_dict[str(scaf.name)]
+                print str(len(gaps)), "gaps loaded for scaffold", str(scaf.name)
             except KeyError:
+                print "No gaps loaded for scaffold", str(scaf.name)
                 continue
             # Iterate through gaps and check support
             for i, gap in enumerate(gaps):
                 gap_size = gap[1] - gap[0]
                 readsL = [L for L in gapsL.fetch(str(scaf.name)+'.gap.'+str(i+1)+'.L')]
                 readsR = [R for R in gapsR.fetch(str(scaf.name)+'.gap.'+str(i+1)+'.R')]
+
                 # Determine the number of supporting reads, store alignments in tuple
                 support = [(L, R) for L, R in it.product(readsL, readsR) if L.query_name == R.query_name]
-                print "Scaffold:", str(scaf.name), "Gap:", str(i), "Support:", len(support)
+                print "Scaffold:", str(scaf.name), "Gap:", str(i+1), "Size:", str(gap_size), "Support:", len(support)
                 if len(support) < args.min_reads:
                     continue
                 # Iterate through supporting reads and measure wiggle
                 fastq = list()
                 for L, R in support:
                     read_span = R.query_alignment_start - L.query_alignment_end
+                    print "Read Span:", str(read_span)
                     if (gap_size - gap_size * args.wiggle) < read_span < (gap_size + gap_size * args.wiggle):
                         sequence = L.query_sequence[L.query_alignment_end:R.query_alignment_start]
                         quality = L.query_qualities[L.query_alignment_end:R.query_alignment_start]
