@@ -78,7 +78,7 @@ class Support():
 #                        quality = L.query_qualities[L.query_alignment_end:R.query_alignment_start]
                         fasta.append('>'+str(L.query_name)+'\n'+str(sequence)+'\n')
                 # Continue if too many reads fail wiggle-check
-                if len(fastq) < args.min_reads:
+                if len(fasta) < args.min_reads:
                     continue
                 # Create sub-directory and write FastQ output
                 gap_name = str(scaf.name)+'.gap.'+str(i+1)
