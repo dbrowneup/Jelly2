@@ -21,7 +21,8 @@ class Placement():
         for scaf, gaps in gap_D.iteritems():
             for i, g in enumerate(gaps):
                 try:
-                    seq = [str(f) for f in Fasta('Gap_Support/'+str(scaf)+'.gap.'+str(i+1)+'/assembly.fa')]
+                    F = Fasta('Gap_Support/'+str(scaf)+'.gap.'+str(i+1)+'/assembly.fa')
+                    seq = [str(f) for f in F]
                     if len(seq) == 1:
                         gap_D[scaf][i].append(str(seq[0]))
                     else:
