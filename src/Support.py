@@ -46,7 +46,6 @@ class Support():
         gap_dict = {x[0]: [] for x in gap_list if x[0] not in gap_dict}
         for x in gap_list:
             gap_dict[x[0]].append((int(x[1]), int(x[2])))
-#        gap_dict = {gap_dict[x[0]].append((int(x[1]), int(x[2]))) if x[0] in gap_dict else x[0]: [(int(x[1]), int(x[2]))] for x in gap_list}
         ref = Fasta(args.scaffolds)
         # Iterate through scaffolds and determine support
         os.mkdir('Gap_Support')
@@ -64,30 +63,30 @@ class Support():
                 gap_size = gap[1] - gap[0]
                 readsL = [L for L in gapsL.fetch(str(scaf.name)+'.gap.'+str(i+1)+'.L')]
                 readsR = [R for R in gapsR.fetch(str(scaf.name)+'.gap.'+str(i+1)+'.R')]
-                # Determine the number of supporting reads, store alignments in tuple
+                # Determine the number of supporting reads, store alignments in list of tuples
                 support = [(L, R) for L, R in it.product(readsL, readsR) if L.query_name == R.query_name]
                 print "Scaffold:", str(scaf.name), "Gap:", str(i+1), "Size:", str(gap_size), "Support:", len(support)
                 if len(support) < args.min_reads:
                     continue
                 # Iterate through supporting reads and measure wiggle
-                fastq = list()
+                fasta = list()
                 for L, R in support:
                     read_span = R.query_alignment_start - L.query_alignment_end
                     print "Read Span:", str(read_span)
                     if (gap_size - gap_size * args.wiggle) < read_span < (gap_size + gap_size * args.wiggle):
                         sequence = L.query_sequence[L.query_alignment_end:R.query_alignment_start]
-                        quality = L.query_qualities[L.query_alignment_end:R.query_alignment_start]
-                        fastq.append('@'+str(L.query_name)+'\n'+str(sequence)+'\n+\n'+str(quality)+'\n')
+#                        quality = L.query_qualities[L.query_alignment_end:R.query_alignment_start]
+                        fasta.append('>'+str(L.query_name)+'\n'+str(sequence)+'\n')
                 # Continue if too many reads fail wiggle-check
                 if len(fastq) < args.min_reads:
                     continue
                 # Create sub-directory and write FastQ output
                 gap_name = str(scaf.name)+'.gap.'+str(i+1)
-                supported_gaps.append((gap_name, str(len(fastq))))
+                supported_gaps.append((gap_name, str(len(fasta))))
                 path = 'Gap_Support/'+gap_name
                 os.mkdir(path)
-                with open(path+'/reads.fq', 'a') as output:
-                    for read in fastq:
+                with open(path+'/reads.fa', 'a') as output:
+                    for read in fasta:
                         output.write(read)
         with open('Supported_Gaps.txt', 'w') as output:
             for gap_name, support in supported_gaps:
