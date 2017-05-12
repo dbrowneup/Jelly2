@@ -13,7 +13,7 @@ class Assembly():
         gaps = [x.split('\t') for x in gaps]
         for gap in gaps:
             # Map reads against reads
-            reads_path = 'Gap_Support/'+gap[0]+'/reads.fq'
+            reads_path = 'Gap_Support/'+gap[0]+'/reads.fa'
             align_path = 'Gap_Support/'+gap[0]+'/reads.paf.gz'
             mappingTemplate = Template("minimap ${params} ${target} ${query}")
             mappingKey = {"params": args.minimap, "target": reads_path, "query": reads_path}
@@ -33,14 +33,14 @@ class Assembly():
                 p4 = subprocess.Popen(str("""awk '/^S/{print(">"$2"\n"$3)}' """+graph_path).split(' '), stdout=output)
                 p4.communicate()
             # Map reads against assembly
-            mappingKey = {"params": "", "target": fasta_path, "query": reads_path}
-            align_path = 'Gap_Support/'+gap[0]+'/consensus.paf'
-            with open(align_path, 'w') as output:
-                p5 = subprocess.Popen(mappingTemplate.substitute(mappingKey).split(' '), stdout=output)
-                p5.communicate()
-            # Generate consensus
-            final_path = 'Gap_Support/'+gap[0]+'/consensus.fa'
-            consensusTemplate = Template('racon ${params} ${reads} ${aligns} ${graph} ${final}')
-            consensusKey = {"params": args.racon, "reads": reads_path, "aligns": align_path, "graph": graph_path, "final": final_path}
-            p6 = subprocess.Popen(consensusTemplate.substitute(consensusKey).split(' '))
-            p6.communicate()
+#            mappingKey = {"params": "", "target": fasta_path, "query": reads_path}
+#            align_path = 'Gap_Support/'+gap[0]+'/consensus.paf'
+#            with open(align_path, 'w') as output:
+#                p5 = subprocess.Popen(mappingTemplate.substitute(mappingKey).split(' '), stdout=output)
+#                p5.communicate()
+#            # Generate consensus
+#            final_path = 'Gap_Support/'+gap[0]+'/consensus.fa'
+#            consensusTemplate = Template('racon ${params} ${reads} ${aligns} ${graph} ${final}')
+#            consensusKey = {"params": args.racon, "reads": reads_path, "aligns": align_path, "graph": graph_path, "final": final_path}
+#            p6 = subprocess.Popen(consensusTemplate.substitute(consensusKey).split(' '))
+#            p6.communicate()
