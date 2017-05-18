@@ -30,7 +30,8 @@ class Assembly():
                 p3 = subprocess.Popen(assemblyTemplate.substitute(assemblyKey).split(' '), stdout=output)
                 p3.communicate()
             with open(fasta_path, 'w') as output:
-                p4 = subprocess.Popen(str("""awk '/^S/{print(">"$2"\n"$3)}' """+graph_path).split(' '), stdout=output)
+                # Using shell=True is not the most secure way!
+                p4 = subprocess.Popen("""awk '/^S/{print(">"$2"\n"$3)}' """+graph_path, shell=True, stdout=output)
                 p4.communicate()
             # Map reads against assembly
 #            mappingKey = {"params": "", "target": fasta_path, "query": reads_path}
