@@ -92,12 +92,6 @@ def main():
     # Run Support
     if check_save('mapping'):
         support.mapping(args)
-        write_save('sorting')
-    if check_save('sorting'):
-        support.sorting(args)
-        write_save('indexing')
-    if check_save('indexing'):
-        support.indexing(args)
         write_save('support')
     if check_save('support'):
         support.find_support(args)

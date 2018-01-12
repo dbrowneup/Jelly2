@@ -20,13 +20,9 @@ class Support():
         mappingTemplate = Template("blasr ${reads} ${flanks} --nproc ${threads} --bam --out ${out} --hitPolicy allbest ${param}")
         for job in [mapL, mapR]:
             subprocess.call(mappingTemplate.substitute(job).split(' '))
-    
-    def sorting(self, args):
         # Sort the BAM alignment files
         pysam.sort("-@", str(args.threads), "-o", "sorted_gaps.L.bam", "aligned_gaps.L.bam")
         pysam.sort("-@", str(args.threads), "-o", "sorted_gaps.R.bam", "aligned_gaps.R.bam")
-    
-    def indexing(self, args):
         # Index the BAM alignment files
         indexL = {"aligns": "sorted_gaps.L.bam"}
         indexR = {"aligns": "sorted_gaps.R.bam"}
@@ -69,24 +65,26 @@ class Support():
                 if len(support) < args.min_reads:
                     continue
                 # Iterate through supporting reads and measure wiggle
-                fasta = list()
+                fastq = list()
                 for L, R in support:
                     read_span = R.query_alignment_start - L.query_alignment_end
                     print "Read Span:", str(read_span)
+                    # If wiggle is acceptable, prepare to write supporting reads
+                    # For now, I have to spoof the FastQ quality values, using Phred score of 8 (~85% accuracy)
                     if (gap_size - gap_size * args.wiggle) < read_span < (gap_size + gap_size * args.wiggle):
-                        sequence = L.query_sequence[L.query_alignment_end:R.query_alignment_start]
-#                        quality = L.query_qualities[L.query_alignment_end:R.query_alignment_start]
-                        fasta.append('>'+str(L.query_name)+'\n'+str(sequence)+'\n')
+                        sequence = str(L.query_sequence[L.query_alignment_end:R.query_alignment_start])
+                        quality = ''.join([')' for i in range(len(sequence))])
+                        fastq.append('@'+str(L.query_name)+'\n'+sequence+'\n'+'+'+str(L.query_name)+'\n'+quality+'\n')
                 # Continue if too many reads fail wiggle-check
-                if len(fasta) < args.min_reads:
+                if len(fastq) < args.min_reads:
                     continue
                 # Create sub-directory and write FastQ output
                 gap_name = str(scaf.name)+'.gap.'+str(i+1)
-                supported_gaps.append((gap_name, str(len(fasta))))
+                supported_gaps.append((gap_name, str(len(fastq))))
                 path = 'Gap_Support/'+gap_name
                 os.mkdir(path)
-                with open(path+'/reads.fa', 'a') as output:
-                    for read in fasta:
+                with open(path+'/reads.fq', 'a') as output:
+                    for read in fastq:
                         output.write(read)
         with open('Supported_Gaps.txt', 'w') as output:
             for gap_name, support in supported_gaps:

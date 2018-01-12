@@ -1,6 +1,6 @@
 #!/usr/bin/env python
 
-import subprocess
+import os, subprocess
 from string import Template
 
 
@@ -11,28 +11,34 @@ class Assembly():
     def assemble_gaps(self, args):
         gaps = open('Supported_Gaps.txt', 'r').read().split('\n')[:-1]
         gaps = [x.split('\t') for x in gaps]
+        cwd = os.getcwd()
         for gap in gaps:
-            # Map reads against reads
-            reads_path = 'Gap_Support/'+gap[0]+'/reads.fa'
-            align_path = 'Gap_Support/'+gap[0]+'/reads.paf.gz'
-            mappingTemplate = Template("minimap ${params} ${target} ${query}")
-            mappingKey = {"params": args.minimap, "target": reads_path, "query": reads_path}
-            with open(align_path, 'w') as output:
-                p1 = subprocess.Popen(mappingTemplate.substitute(mappingKey).split(' '), stdout=subprocess.PIPE)
-                p2 = subprocess.Popen('gzip -1'.split(' '), stdin=p1.stdout, stdout=output)
-                p2.communicate()
-            # Assemble reads based on mapping
-            graph_path = 'Gap_Support/'+gap[0]+'/assembly.gfa'
-            fasta_path = 'Gap_Support/'+gap[0]+'/assembly.fa'
-            assemblyTemplate = Template("miniasm ${params} -f ${reads} ${aligns}")
-            assemblyKey = {"params": args.miniasm, "reads": reads_path, "aligns": align_path}
-            with open(graph_path, 'w') as output:
-                p3 = subprocess.Popen(assemblyTemplate.substitute(assemblyKey).split(' '), stdout=output)
-                p3.communicate()
-            with open(fasta_path, 'w') as output:
-                # Using shell=True is not the most secure way!
-                p4 = subprocess.Popen("""awk '/^S/{print(">"$2"\n"$3)}' """+graph_path, shell=True, stdout=output)
-                p4.communicate()
+            # Run Ra assembler
+            gap_path = cwd + '/Gap_Support/' + gap[0]
+            os.chdir(gap_path)
+            p1 = subprocess.Popen(['ra.py', '--data', gap_path + '/reads.fq'])
+            p1.communicate()
+#            # Map reads against reads
+#            reads_path = 'Gap_Support/'+gap[0]+'/reads.fa'
+#            align_path = 'Gap_Support/'+gap[0]+'/reads.paf.gz'
+#            mappingTemplate = Template("minimap ${params} ${target} ${query}")
+#            mappingKey = {"params": args.minimap, "target": reads_path, "query": reads_path}
+#            with open(align_path, 'w') as output:
+#                p1 = subprocess.Popen(mappingTemplate.substitute(mappingKey).split(' '), stdout=subprocess.PIPE)
+#                p2 = subprocess.Popen('gzip -1'.split(' '), stdin=p1.stdout, stdout=output)
+#                p2.communicate()
+#            # Assemble reads based on mapping
+#            graph_path = 'Gap_Support/'+gap[0]+'/assembly.gfa'
+#            fasta_path = 'Gap_Support/'+gap[0]+'/assembly.fa'
+#            assemblyTemplate = Template("miniasm ${params} -f ${reads} ${aligns}")
+#            assemblyKey = {"params": args.miniasm, "reads": reads_path, "aligns": align_path}
+#            with open(graph_path, 'w') as output:
+#                p3 = subprocess.Popen(assemblyTemplate.substitute(assemblyKey).split(' '), stdout=output)
+#                p3.communicate()
+#            with open(fasta_path, 'w') as output:
+#                # Using shell=True is not the most secure way!
+#                p4 = subprocess.Popen("""awk '/^S/{print(">"$2"\n"$3)}' """+graph_path, shell=True, stdout=output)
+#                p4.communicate()
             # Map reads against assembly
 #            mappingKey = {"params": "", "target": fasta_path, "query": reads_path}
 #            align_path = 'Gap_Support/'+gap[0]+'/consensus.paf'
