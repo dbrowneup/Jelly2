@@ -16,9 +16,9 @@ Make sure that the `src` directory is in your `PYTHONPATH` variable, so the driv
 * [BLASR](https://github.com/PacificBiosciences/blasr)
 * [pysam](https://github.com/pysam-developers/pysam)
 * [pyfaidx](https://github.com/mdshw5/pyfaidx)
-* [Minimap](https://github.com/lh3/minimap)
-* [Miniasm](https://github.com/lh3/miniasm)
-* [Racon](https://github.com/isovic/racon)
+* [Ra](https://github.com/rvaser/ra)
+
+I recommend using [Pitchfork](https://github.com/PacificBiosciences/pitchfork) to deploy BLASR, along with SAMtools and bam2fastx
 
 # Design Philosophy
 
